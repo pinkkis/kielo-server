@@ -30,6 +30,7 @@
     "debug": "^4.1.1",
     "dotenv": "^8.0.0",
     "fastify": "^2.3.0",
+    "fastify-blipp": "^1.2.1",
     "nanoid": "^2.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.3",
