@@ -12,3 +12,8 @@
 // 		ws(): any;
 // 	}
 // }
+
+declare module 'fastify-ws';
+declare module 'fastify-blipp';
+declare module 'nanoid';
+declare module 'nanoid/generate';
