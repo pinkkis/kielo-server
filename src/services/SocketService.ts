@@ -3,7 +3,6 @@ import { injectable, singleton } from 'tsyringe';
 import { Client } from 'src/models/Client';
 import * as generateId from 'nanoid';
 import { logger } from 'src/Logger';
-import { stringify } from 'querystring';
 
 @injectable()
 @singleton()
