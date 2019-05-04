@@ -2,31 +2,57 @@ import { EventEmitter } from 'events';
 import { injectable, singleton } from 'tsyringe';
 import { Client } from 'src/models/Client';
 import * as generateId from 'nanoid';
+import * as WebSocket from 'ws';
 import { logger } from 'src/Logger';
+import { ConfigService } from 'src/config';
 
 @injectable()
 @singleton()
 export class SocketService extends EventEmitter {
+	private socketServer: any;
 	private connections: Map<string, Client>;
+	private heartbeatInterval: NodeJS.Timeout;
 
-	constructor() {
+	constructor(private readonly config: ConfigService) {
 		super();
 		this.connections = new Map<string, Client>();
+		this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), this.config.get('heartbeatInterval') );
 	}
 
 	public connectionHandler(socket: WebSocket): void {
 		const clientId = generateId();
 		const newClient = new Client(clientId, socket);
 
-		newClient.socket.onmessage = this.messageHandler;
+		newClient.socket.on('message', (message: any) => this.onMessageHandler(newClient, message) );
+		newClient.socket.on('close' , (code: number, reason: string) => this.onCloseHandler(newClient, code, reason) );
+		newClient.socket.on('error', (error: Error) => this.onErrorHandler(newClient, error) );
+		newClient.socket.on('pong', (data: Buffer) => this.onPongHandler(newClient, data) );
 
 		this.connections.set(clientId, newClient);
 		this.emit('connection:new', newClient);
-		logger.info('new client', newClient.id);
+		logger.info('SocketService#connection:new', newClient.id);
 	}
 
-	public messageHandler(event: MessageEvent): void {
-		console.log(event.type, event.data, event.target);
+	public onMessageHandler(client: Client, data: string|Buffer|ArrayBuffer|Buffer[]): void {
+		logger.info('socket#message', client.id, data);
+	}
+
+	public onCloseHandler(client: Client, code: number, reason: string): void {
+		logger.info('socket#close', client.id, code, reason);
+		if (this.connections.has(client.id)) {
+			this.connections.delete(client.id);
+			this.emit('connection:delete', client.id);
+			client.destroy();
+		}
+	}
+
+	public onErrorHandler(client: Client, error: Error): void {
+		logger.error('socket#error', client.id, error);
+	}
+
+	public onPongHandler(client: Client, data: Buffer): void {
+		logger.trace('socket#pong', client.id);
+		client.heartBeat(true);
 	}
 
 	public getConnections(): Map<string, Client> {
@@ -37,22 +63,43 @@ export class SocketService extends EventEmitter {
 		return Array.from(this.connections.values());
 	}
 
-	// erver.ready( (err: Error) => {
-	// 	if (err) {
-	// 		throw err;
+	public setServer(wss: any): void {
+		this.socketServer = wss;
+		this.emit('server:available');
+		logger.info('SocketService#available');
+	}
+
+	public broadcast(): void {
+		// this.socketServer.se
+	}
+
+	// ------------
+
+	private checkHeartbeat(): void {
+		if (this.connections.size) {
+			logger.info('SocketServer:checkHeartbeat', this.connections.size);
+		}
+
+		this.connections.forEach( (client: Client) => {
+			if (!client.isAlive) {
+				logger.info('heartbeat fail', client.id);
+				return client.socket.terminate();
+			}
+
+			if (client.socket.OPEN) {
+				client.heartBeat();
+				client.socket.ping();
+			}
+		});
+	}
+
+	// private getClientBySocket(ws: WebSocket): Client {
+	// 	for (const client of this.connections.values()) {
+	// 		if (client.socket === ws) {
+	// 			return client;
+	// 		}
 	// 	}
 
-	// 	(server as any).ws
-	// 		.on('connection', (socket) => {
-	// 			console.log('Client connected');
-
-	// 			socket.on('message', (msg: any) => {
-	// 				console.log('Client message: ', msg);
-	// 			});
-
-	// 			socket.on('close', () => {
-	// 				console.log('Client disconnected');
-	// 			});
-	// 		})
-	// });
+	// 	return null;
+	// }
 }

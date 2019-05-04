@@ -1,19 +1,21 @@
 import * as fp from 'fastify-plugin';
-import { API_ROOT } from 'src/config';
 import { injectable, singleton } from 'tsyringe';
 import { RoomService } from 'src/services/RoomService';
-
-const PREFIX = API_ROOT + '/rooms';
+import { ConfigService } from 'src/config';
 
 @injectable()
 @singleton()
 export class RoomsController {
-	constructor(private service: RoomService) {}
+	private readonly PREFIX: string;
+
+	constructor(private config: ConfigService, private service: RoomService) {
+		this.PREFIX = this.config.get('API_ROOT') + '/rooms';
+	}
 
 	get routes(): any[] {
 		return [
 			fp(async (server, opts, next) => {
-				server.get(PREFIX + '', async (req, res) => {
+				server.get(this.PREFIX + '', async (req, res) => {
 					const rooms = await this.service.getRooms();
 					return rooms;
 				});
@@ -31,7 +33,7 @@ export class RoomsController {
 					},
 				};
 
-				server.get(PREFIX + '/:roomId', {schema}, async (req, res) => {
+				server.get(this.PREFIX + '/:roomId', {schema}, async (req, res) => {
 					const room = await this.service.getRoom(req.params.roomId);
 					return room;
 				});

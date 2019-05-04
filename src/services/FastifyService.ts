@@ -12,6 +12,7 @@ import { IKieloHttpServer } from 'src/models/IKieloHttpServer';
 import { SocketService } from './SocketService';
 import { DatabaseService } from './DatabaseService';
 import { logger } from 'src/Logger';
+import * as WebSocket from 'ws';
 
 @injectable()
 @singleton()
@@ -21,7 +22,7 @@ export class FastifyService extends EventEmitter {
 	constructor(private config: ConfigService, private socketService: SocketService, private dbService: DatabaseService) {
 		super();
 
-		this.server = fastify(this.config.fastifyOptions);
+		this.server = fastify(this.config.get('fastifyOptions'));
 		this.server.register(fastifyWs);
 		this.server.register(fastifyStatic, {
 			root: resolve(__dirname, '..', '..', 'public'),
@@ -34,7 +35,7 @@ export class FastifyService extends EventEmitter {
 	}
 
 	public async start(): Promise<any> {
-		await this.server.listen(this.config.WEB_PORT);
+		await this.server.listen(this.config.get('WEB_PORT'));
 		this.server.blipp();
 		return Promise.resolve(true);
 	}
@@ -55,8 +56,9 @@ export class FastifyService extends EventEmitter {
 	}
 
 	private readyHandler() {
+		this.socketService.setServer(this.server.ws);
 		this.server.ws
-			.on('connection', socket => this.socketService.connectionHandler(socket));
+			.on('connection', (socket: WebSocket) => this.socketService.connectionHandler(socket));
 	}
 
 	private loadRoutes(): void {

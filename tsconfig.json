@@ -6,10 +6,10 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"target": "es6",
-		"sourceMap": true,
+		"sourceMap": false,
 		"preserveSymlinks": true,
 		"outDir": "./dist",
 		"baseUrl": "./"
 	},
-	"exclude": ["node_modules", "./src/SocketClient/client.ts"]
+	"exclude": ["node_modules", "src/SocketClient/*"]
 }

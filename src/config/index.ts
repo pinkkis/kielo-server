@@ -7,16 +7,13 @@ export const API_ROOT = '/api';
 
 @singleton()
 export class ConfigService {
-	get API_ROOT(): string {
-		return API_ROOT;
-	}
+	private readonly settings: Map<string, any> = new Map<string, any>();
 
-	get WEB_PORT(): number {
-		return Number(process.env.SERVER_PORT) || 3000;
-	}
-
-	get fastifyOptions(): ServerOptionsAsSecureHttp2 {
-		return {
+	constructor() {
+		this.settings.set('heartbeatInterval', 10000);
+		this.settings.set('API_ROOT', '/api');
+		this.settings.set('WEB_PORT', Number(process.env.SERVER_PORT) || 3000);
+		this.settings.set('fastifyOptions', {
 			http2: true,
 			https: {
 				allowHTTP1: true,
@@ -31,6 +28,10 @@ export class ConfigService {
 				prettyPrint: true,
 			},
 			ignoreTrailingSlash: true,
-		};
+		} as ServerOptionsAsSecureHttp2);
+	}
+
+	public get(key: string): any {
+		return this.settings.get(key);
 	}
 }

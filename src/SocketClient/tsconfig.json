@@ -3,7 +3,10 @@
 		"module": "es6",
 		"target": "es6",
 		"lib": ["dom"],
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
 		"outDir": "../../dist/SocketClient/"
 	},
-	"files": ["client.ts"]
+	"files": ["client.ts", "events.ts"]
 }
