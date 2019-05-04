@@ -1,13 +1,14 @@
-import * as fastify from 'fastify';
-import * as http from 'http';
-import * as http2 from 'http2';
+// import * as fastify from 'fastify';
+// import {Server, IncomingMessage, ServerResponse} from 'http';
+// import * as http2 from 'http2';
 
-declare module 'fastify' {
-	export interface FastifyInstance<
-		HttpServer = http.Server,
-		HttpRequest = http.IncomingMessage,
-		HttpResponse = http.ServerResponse
-	> {
-		blipp(): void;
-	}
-}
+// declare module 'fastify' {
+// 	export interface FastifyInstance<
+// 		Server,
+// 		IncomingMessage,
+// 		ServerResponse
+// 	> {
+// 		blipp(): void;
+// 		ws(): any;
+// 	}
+// }
