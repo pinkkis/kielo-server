@@ -1,18 +1,20 @@
 import * as fp from 'fastify-plugin';
+import { injectable, singleton } from 'tsyringe';
 
-export const index = fp(async (server, opts, next) => {
-	server.get('/', (req, res) => {
-		res.sendFile('index.html');
-	});
-});
+const PREFIX = '/';
 
-// export const index = fp(async (server, opts, next) => {
-// 	server.route({
-// 		method: 'GET',
-// 		url: '/',
-// 		handler: (req, res) => {
-// 			res.sendFile('index.html');
-// 		},
-// 	});
-// 	next();
-// });
+@injectable()
+@singleton()
+export class PublicController {
+	get routes(): any[] {
+		return [
+			fp(async (server, opts, next) => {
+				server.get(PREFIX, (req, res) => {
+					res.sendFile('index.html');
+				});
+
+				next();
+			}),
+		];
+	}
+}

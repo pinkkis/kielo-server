@@ -27,10 +27,10 @@ const fastifyOptions: fastify.ServerOptionsAsSecureHttp2 = {
 	},
 	logger: {
 		prettyPrint: true,
-	}
+	},
+	ignoreTrailingSlash: true,
 };
 
-const roomService = container.resolve(RoomService);
 const server = fastify(fastifyOptions);
 
 server.register(fastifyWs);

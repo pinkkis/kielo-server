@@ -1,13 +1,19 @@
 import * as fp from 'fastify-plugin';
 import { API_ROOT } from 'src/config';
+import { injectable, singleton } from 'tsyringe';
 
-export const rootRoute = fp(async (server, opts, next) => {
-	server.route({
-		method: 'GET',
-		url: API_ROOT,
-		handler: (req, res) => {
-			res.send({ hello: 'world' });
-		},
-	});
-	next();
-});
+const PREFIX = API_ROOT;
+
+@injectable()
+@singleton()
+export class RootController {
+	get routes(): any[] {
+		return [
+			fp(async (server, opts, next) => {
+				server.get(PREFIX + '', async (req, res) => {
+					return { hello: 'world' };
+				});
+			}),
+		];
+	}
+}

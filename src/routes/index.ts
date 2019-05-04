@@ -1,4 +1,10 @@
-import { rootRoute } from './root';
-import { index } from './public';
+import { RootController } from './root';
+import { container } from 'tsyringe';
+import { RoomsController } from './rooms';
+import { PublicController } from './public';
 
-export const routes = [index, rootRoute];
+const roomsRoutes = container.resolve(RoomsController).routes;
+const rootRoutes = container.resolve(RootController).routes;
+const publicRoutes = container.resolve(PublicController).routes;
+
+export const routes = [].concat(publicRoutes, roomsRoutes, rootRoutes);
