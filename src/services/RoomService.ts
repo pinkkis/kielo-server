@@ -25,4 +25,8 @@ export class RoomService {
 	public addRoom(room: Room): Promise<Room> {
 		return Promise.resolve(null);
 	}
+
+	public closeRoom(room: Room): Promise<boolean> {
+		return Promise.resolve(true);
+	}
 }

@@ -1,10 +1,11 @@
 import { MessageType } from './MessageType';
 import { encode, decode, Any } from 'messagepack';
+import { IOriginalMessage } from './IOriginalMessage';
 
 export class KieloMessage {
-	public messageType: MessageType;
+	public messageType: MessageType|number;
 	private serializedMessage: ArrayBuffer;
-	private originalMessage: any = null;
+	private originalMessage: any;
 
 	public static fromMessageEvent(event: MessageEvent) {
 		return new KieloMessage(true, event.data, null);
@@ -14,9 +15,9 @@ export class KieloMessage {
 		return new KieloMessage(true, input, null);
 	}
 
-	public static fromObject(input: any) {
-		const messageType = input.t || MessageType.MESSAGE;
-		delete input.t;
+	public static fromObject(input: IOriginalMessage) {
+		const messageType: MessageType = input.messageType || MessageType.MESSAGE;
+		delete input.messageType;
 		return new KieloMessage(false, input, messageType);
 	}
 
@@ -26,7 +27,7 @@ export class KieloMessage {
 	) {
 		return new KieloMessage(
 			false,
-			{ t: messageType, message: input },
+			{ msg: input },
 			messageType,
 		);
 	}
@@ -34,7 +35,7 @@ export class KieloMessage {
 	constructor(
 		serialized: boolean = false,
 		input: any,
-		messageType?: MessageType,
+		messageType?: MessageType|number,
 	) {
 		if (!serialized) {
 			this.messageType = messageType || MessageType.BASE;
@@ -45,7 +46,7 @@ export class KieloMessage {
 		}
 	}
 
-	public get message(): any {
+	public get data(): any {
 		return this.originalMessage;
 	}
 
@@ -55,7 +56,7 @@ export class KieloMessage {
 
 	private serialize(input: any): any {
 		this.originalMessage = input;
-		this.serializedMessage = encode(input);
+		this.serializedMessage = encode({...input, t: this.messageType});
 		return this;
 	}
 
@@ -65,6 +66,10 @@ export class KieloMessage {
 		this.messageType = this.originalMessage.t
 			? MessageType[this.originalMessage.t as keyof MessageType]
 			: MessageType.BASE;
+
+		if (this.originalMessage.t) {
+			delete this.originalMessage.t;
+		}
 
 		return this;
 	}

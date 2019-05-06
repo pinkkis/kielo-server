@@ -13,8 +13,7 @@ $string.addEventListener('click', () => {
 });
 
 $type.addEventListener('click', () => {
-
-	ws.send({ message: 'fooo', t: MessageType.ROOM_JOINED });
+	ws.send({ msg: '1', messageType: MessageType.ROOM_JOINED });
 });
 
 ws.on('open', () => {
@@ -22,5 +21,5 @@ ws.on('open', () => {
 });
 
 ws.on('message', (msg) => {
-	$debug.value += `${msg.t} - ${msg.message}\n`;
+	$debug.value += `${msg.messageType} - ${msg.data.message}\n`;
 }, this);

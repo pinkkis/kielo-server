@@ -7,6 +7,7 @@ import { logger } from 'src/Logger';
 import { ConfigService } from 'src/config';
 import { KieloMessage } from 'src/models/KieloMessage';
 import { MessageType } from 'src/models/MessageType';
+import { NerveService } from './NerveService';
 
 @injectable()
 @singleton()
@@ -15,7 +16,7 @@ export class SocketService extends EventEmitter {
 	private connections: Map<string, Client>;
 	private heartbeatInterval: NodeJS.Timeout;
 
-	constructor(private readonly config: ConfigService) {
+	constructor(private readonly config: ConfigService, private nerve: NerveService) {
 		super();
 		this.connections = new Map<string, Client>();
 		this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), this.config.get('heartbeatInterval') );
@@ -38,7 +39,7 @@ export class SocketService extends EventEmitter {
 	public onMessageHandler(client: Client, data: string|ArrayBuffer): void {
 		const message = typeof data === 'string' ? KieloMessage.fromString(data)  : KieloMessage.fromArrayBuffer(data);
 
-		logger.info('socket#message', client.id, message.messageType, message.message);
+		logger.info('socket#message', client.id, message.messageType, message.data);
 	}
 
 	public onCloseHandler(client: Client, code: number, reason: string): void {

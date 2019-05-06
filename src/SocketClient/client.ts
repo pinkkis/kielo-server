@@ -3,6 +3,8 @@ import { KieloMessage } from '../models/KieloMessage';
 import { MessageType } from '../models/MessageType';
 
 export { MessageType };
+
+// TODO: reconnect logic
 export class SocketClient extends EventEmitter {
 	public socket: WebSocket;
 
@@ -25,13 +27,19 @@ export class SocketClient extends EventEmitter {
 		});
 	}
 
-	public send(message: string|KieloMessage, messageType?: MessageType) {
+	public send(message: string|object|KieloMessage, messageType?: MessageType) {
+		let msg: KieloMessage;
+
 		if (typeof message === 'string') {
-			message = KieloMessage.fromString(message, messageType || MessageType.MESSAGE);
+			msg = KieloMessage.fromString(message, messageType || MessageType.MESSAGE);
+		} else if (typeof message === 'object') {
+			msg = KieloMessage.fromObject(message);
+		} else {
+			msg = message;
 		}
 
 		if (this.socket.OPEN) {
-			this.socket.send(message.serialized);
+			this.socket.send(msg.serialized);
 		}
 	}
 
