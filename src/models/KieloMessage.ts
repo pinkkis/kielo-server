@@ -1,25 +1,34 @@
 import { MessageType } from './MessageType';
-import { encode, decode } from 'messagepack';
+import { encode, decode, Any } from 'messagepack';
 
 export class KieloMessage {
-	public type: 'string' | 'binary';
 	public messageType: MessageType;
-	private serializedMessage: Uint8Array = null;
+	private serializedMessage: ArrayBuffer;
 	private originalMessage: any = null;
 
 	public static fromMessageEvent(event: MessageEvent) {
 		return new KieloMessage(true, event.data, null);
 	}
 
-	public static fromSerialized(input: any) {
+	public static fromArrayBuffer(input: ArrayBuffer) {
 		return new KieloMessage(true, input, null);
+	}
+
+	public static fromObject(input: any) {
+		const messageType = input.t || MessageType.MESSAGE;
+		delete input.t;
+		return new KieloMessage(false, input, messageType);
 	}
 
 	public static fromString(
 		input: string,
 		messageType: MessageType = MessageType.MESSAGE,
 	) {
-		return new KieloMessage(false, input, messageType);
+		return new KieloMessage(
+			false,
+			{ t: messageType, message: input },
+			messageType,
+		);
 	}
 
 	constructor(
@@ -36,10 +45,6 @@ export class KieloMessage {
 		}
 	}
 
-	public get isBinary(): boolean {
-		return this.type === 'binary';
-	}
-
 	public get message(): any {
 		return this.originalMessage;
 	}
@@ -49,7 +54,6 @@ export class KieloMessage {
 	}
 
 	private serialize(input: any): any {
-		this.type = typeof input === 'string' ? 'string' : 'binary';
 		this.originalMessage = input;
 		this.serializedMessage = encode(input);
 		return this;
@@ -57,9 +61,9 @@ export class KieloMessage {
 
 	private deserialize(input: any): any {
 		this.serializedMessage = input;
-		this.originalMessage = decode(input);
-		this.messageType = this.originalMessage.messageType
-			? MessageType[this.originalMessage.messageType as keyof MessageType]
+		this.originalMessage = decode(input, Any);
+		this.messageType = this.originalMessage.t
+			? MessageType[this.originalMessage.t as keyof MessageType]
 			: MessageType.BASE;
 
 		return this;

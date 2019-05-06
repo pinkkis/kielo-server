@@ -1,19 +1,20 @@
 import { FOO_VALUE } from './common.js';
-import { SocketClient } from '/client/client.bundle.js';
+import { SocketClient, MessageType } from '/client/client.bundle.js';
 
 const ws = new SocketClient();
 
 const $debug = document.getElementById('debug');
 
-const $foo = document.querySelector('a.send-foo');
-const $float = document.querySelector('a.send-float');
+const $string = document.querySelector('a.send-string');
+const $type = document.querySelector('a.send-type');
 
-$foo.addEventListener('click', () => {
+$string.addEventListener('click', () => {
 	ws.send('foo');
 });
 
-$float.addEventListener('click', () => {
-	ws.send(Math.random().toString());
+$type.addEventListener('click', () => {
+
+	ws.send({ message: 'fooo', t: MessageType.ROOM_JOINED });
 });
 
 ws.on('open', () => {
@@ -21,5 +22,5 @@ ws.on('open', () => {
 });
 
 ws.on('message', (msg) => {
-	$debug.value += `\n${msg.messageType} - ${msg.message}`;
+	$debug.value += `${msg.t} - ${msg.message}\n`;
 }, this);

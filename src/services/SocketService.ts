@@ -35,8 +35,8 @@ export class SocketService extends EventEmitter {
 		logger.info('SocketService#connection:new', newClient.id);
 	}
 
-	public onMessageHandler(client: Client, data: string|Buffer|ArrayBuffer|Buffer[]): void {
-		const message = KieloMessage.fromSerialized(data);
+	public onMessageHandler(client: Client, data: string|ArrayBuffer): void {
+		const message = typeof data === 'string' ? KieloMessage.fromString(data)  : KieloMessage.fromArrayBuffer(data);
 
 		logger.info('socket#message', client.id, message.messageType, message.message);
 	}
