@@ -1,29 +1,34 @@
 import { MessageType } from './MessageType';
+import { encode, decode } from 'messagepack';
 
-export const SEPARATOR = '|:';
-
-export class MessageModel {
-	public type: 'string'|'binary';
+export class KieloMessage {
+	public type: 'string' | 'binary';
 	public messageType: MessageType;
-	private serializedMessage: any = null;
+	private serializedMessage: Uint8Array = null;
 	private originalMessage: any = null;
 
 	public static fromMessageEvent(event: MessageEvent) {
-		return new MessageModel(true, event.data, null);
+		return new KieloMessage(true, event.data, null);
 	}
 
 	public static fromSerialized(input: any) {
-		return new MessageModel(true, input, null);
+		return new KieloMessage(true, input, null);
 	}
 
-	public static fromString(input: string, messageType: MessageType = MessageType.MESSAGE) {
-		return new MessageModel(false, input, messageType);
+	public static fromString(
+		input: string,
+		messageType: MessageType = MessageType.MESSAGE,
+	) {
+		return new KieloMessage(false, input, messageType);
 	}
 
-	constructor(serialized: boolean = false, input: any, messageType?: MessageType) {
+	constructor(
+		serialized: boolean = false,
+		input: any,
+		messageType?: MessageType,
+	) {
 		if (!serialized) {
 			this.messageType = messageType || MessageType.BASE;
-			this.originalMessage = input;
 			this.serialize(input);
 		} else {
 			this.serializedMessage = input;
@@ -45,17 +50,18 @@ export class MessageModel {
 
 	private serialize(input: any): any {
 		this.type = typeof input === 'string' ? 'string' : 'binary';
-
-		this.serializedMessage = `${this.messageType}|:${input}`;
+		this.originalMessage = input;
+		this.serializedMessage = encode(input);
 		return this;
 	}
 
 	private deserialize(input: any): any {
-		const splitInput = input.split(SEPARATOR);
-		this.messageType = MessageType[splitInput[0] as keyof MessageType];
-		this.originalMessage = splitInput[1];
+		this.serializedMessage = input;
+		this.originalMessage = decode(input);
+		this.messageType = this.originalMessage.messageType
+			? MessageType[this.originalMessage.messageType as keyof MessageType]
+			: MessageType.BASE;
 
 		return this;
 	}
-
 }

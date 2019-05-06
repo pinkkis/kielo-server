@@ -1,5 +1,5 @@
 import { EventEmitter } from './events';
-import { MessageModel } from '../models/MessageModel';
+import { KieloMessage } from '../models/KieloMessage';
 import { MessageType } from '../models/MessageType';
 
 export { MessageType };
@@ -15,18 +15,19 @@ export class SocketClient extends EventEmitter {
 
 	public setupEvents(): void {
 		this.socket.addEventListener('message', msg => {
-			const message = MessageModel.fromMessageEvent(msg);
+			const message = KieloMessage.fromMessageEvent(msg);
 			this.emit('message', message);
 		});
 
 		this.socket.addEventListener('open', () => {
+			this.socket.binaryType = 'arraybuffer';
 			this.emit('open', this);
 		});
 	}
 
-	public send(message: string|MessageModel, messageType?: MessageType) {
+	public send(message: string|KieloMessage, messageType?: MessageType) {
 		if (typeof message === 'string') {
-			message = MessageModel.fromString(message, messageType || MessageType.MESSAGE);
+			message = KieloMessage.fromString(message, messageType || MessageType.MESSAGE);
 		}
 
 		if (this.socket.OPEN) {

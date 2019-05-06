@@ -5,7 +5,7 @@ import * as generateId from 'nanoid';
 import * as WebSocket from 'ws';
 import { logger } from 'src/Logger';
 import { ConfigService } from 'src/config';
-import { MessageModel } from 'src/models/MessageModel';
+import { KieloMessage } from 'src/models/KieloMessage';
 import { MessageType } from 'src/models/MessageType';
 
 @injectable()
@@ -36,7 +36,7 @@ export class SocketService extends EventEmitter {
 	}
 
 	public onMessageHandler(client: Client, data: string|Buffer|ArrayBuffer|Buffer[]): void {
-		const message = MessageModel.fromSerialized(data);
+		const message = KieloMessage.fromSerialized(data);
 
 		logger.info('socket#message', client.id, message.messageType, message.message);
 	}
@@ -76,7 +76,7 @@ export class SocketService extends EventEmitter {
 	public broadcast(message: string, rooms?: string[]): any {
 		const targets = this.connections;
 		let targetsMessaged = 0;
-		const mm = MessageModel.fromString(message, MessageType.BROADCAST);
+		const mm = KieloMessage.fromString(message, MessageType.BROADCAST);
 
 		targets.forEach( (client: Client) => {
 			if (client.socket.readyState === WebSocket.OPEN) {
