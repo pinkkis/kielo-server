@@ -5,6 +5,8 @@ import * as generateId from 'nanoid';
 import * as WebSocket from 'ws';
 import { logger } from 'src/Logger';
 import { ConfigService } from 'src/config';
+import { MessageModel } from 'src/models/MessageModel';
+import { MessageType } from 'src/models/MessageType';
 
 @injectable()
 @singleton()
@@ -34,7 +36,9 @@ export class SocketService extends EventEmitter {
 	}
 
 	public onMessageHandler(client: Client, data: string|Buffer|ArrayBuffer|Buffer[]): void {
-		logger.info('socket#message', client.id, data);
+		const message = MessageModel.fromSerialized(data);
+
+		logger.info('socket#message', client.id, message.messageType, message.message);
 	}
 
 	public onCloseHandler(client: Client, code: number, reason: string): void {
@@ -69,8 +73,19 @@ export class SocketService extends EventEmitter {
 		logger.info('SocketService#available');
 	}
 
-	public broadcast(): void {
-		// this.socketServer.se
+	public broadcast(message: string, rooms?: string[]): any {
+		const targets = this.connections;
+		let targetsMessaged = 0;
+		const mm = MessageModel.fromString(message, MessageType.BROADCAST);
+
+		targets.forEach( (client: Client) => {
+			if (client.socket.readyState === WebSocket.OPEN) {
+				client.socket.send(mm.serialized);
+				targetsMessaged++;
+			}
+		});
+
+		return `Transmitted to ${targetsMessaged} clients`;
 	}
 
 	// ------------
@@ -91,6 +106,10 @@ export class SocketService extends EventEmitter {
 				client.socket.ping();
 			}
 		});
+	}
+
+	private stopHeartbeat(): void {
+		clearInterval(this.heartbeatInterval);
 	}
 
 	// private getClientBySocket(ws: WebSocket): Client {

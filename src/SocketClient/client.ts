@@ -1,5 +1,8 @@
-import { EventEmitter } from './events.js'; // TS doesn't care that it's .js and not .ts, but .js is required for browser module resolution
+import { EventEmitter } from './events';
+import { MessageModel } from '../models/MessageModel';
+import { MessageType } from '../models/MessageType';
 
+export { MessageType };
 export class SocketClient extends EventEmitter {
 	public socket: WebSocket;
 
@@ -12,19 +15,22 @@ export class SocketClient extends EventEmitter {
 
 	public setupEvents(): void {
 		this.socket.addEventListener('message', msg => {
-			console.log(msg.data);
-			this.emit('message', msg);
+			const message = MessageModel.fromMessageEvent(msg);
+			this.emit('message', message);
 		});
 
 		this.socket.addEventListener('open', () => {
-			this.socket.send('hello foo');
 			this.emit('open', this);
 		});
 	}
 
-	public send(data: string | ArrayBuffer | Blob) {
+	public send(message: string|MessageModel, messageType?: MessageType) {
+		if (typeof message === 'string') {
+			message = MessageModel.fromString(message, messageType || MessageType.MESSAGE);
+		}
+
 		if (this.socket.OPEN) {
-			this.socket.send(data);
+			this.socket.send(message.serialized);
 		}
 	}
 

@@ -1,13 +1,14 @@
-import { version } from './package.json';
 import { terser } from 'rollup-plugin-terser';
+import typescript from 'rollup-plugin-typescript';
 
 export default {
-	input: 'dist/SocketClient/client.js',
+	input: 'src/SocketClient/client.ts',
 	output: {
 		file: 'dist/SocketClient/client.bundle.js',
 		format: 'esm',
 	},
 	plugins: [
-		terser()
+		typescript(),
+		process.env.NODE_ENV === 'production' ? terser() : () => {},
 	]
 }
