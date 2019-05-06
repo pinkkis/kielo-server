@@ -1,11 +1,11 @@
 {
-	"name": "kielo-server",
+	"name": "@pinkkis/kielo-server",
 	"version": "0.0.1",
 	"description": "kielo-server",
 	"main": "index.js",
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json && npm run build:socketclient",
-		"build:socketclient": "tsc -p src/SocketClient/tsconfig.json",
+		"build:socketclient": "tsc -p src/SocketClient/tsconfig.json && rollup -c",
 		"start": "ts-node -r tsconfig-paths/register src/main.ts",
 		"start:dev": "nodemon",
 		"start:debug": "nodemon --config nodemon-debug.json",
@@ -51,6 +51,8 @@
 		"@types/pino": "^5.8.6",
 		"@types/ws": "^6.0.1",
 		"nodemon": "^1.19.0",
+		"rollup": "^1.11.3",
+		"rollup-plugin-terser": "^4.0.4",
 		"ts-node": "^8.1.0",
 		"tsconfig-paths": "^3.8.0",
 		"tslint": "^5.16.0",

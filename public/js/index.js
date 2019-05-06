@@ -1,5 +1,5 @@
 import { FOO_VALUE } from './common.js';
-import { SocketClient } from '/client/client.js';
+import { SocketClient } from '/client/client.bundle.js';
 
 const ws = new SocketClient();
 

@@ -14,7 +14,7 @@ export class PublicController {
 
 	constructor(private config: ConfigService) {
 		this.PREFIX = '/';
-		this.fileTester = new RegExp(/^(\w|\d|-|_)*\.js$/i);
+		this.fileTester = new RegExp(/^(\w|\d|-|_|.{0,1})*\.js$/i);
 	}
 
 	get routes(): any[] {
@@ -27,9 +27,9 @@ export class PublicController {
 				next();
 			}),
 			fp(async (server, opts, next) => {
-				server.get(this.PREFIX + 'client/:js', (req, res) => {
+				server.get(this.PREFIX + 'client/client.bundle.js', (req, res) => {
 					if (!this.socketClientFiles.has(req.params.js)) {
-						this.socketClientFiles.set(req.params.js, this.loadSocketClientFile(req.params.js));
+						this.socketClientFiles.set(req.params.js, this.loadSocketClientFile('client.bundle.js'));
 					}
 
 					res.type('text/javascript').send(this.socketClientFiles.get(req.params.js));
