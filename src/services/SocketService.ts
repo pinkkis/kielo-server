@@ -42,7 +42,7 @@ export class SocketService extends EventEmitter {
 						? KieloMessage.fromString(data)
 						: KieloMessage.fromArrayBuffer(data);
 
-		this.emit(KieloEvent.CLIENT_MESSAGE, message);
+		this.emit(KieloEvent.CLIENT_MESSAGE, message, client);
 		logger.info('socket#WS_MESSAGE', client.id, message.messageType, message.data); // TODO: change to 'trace'
 	}
 

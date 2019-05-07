@@ -1,5 +1,5 @@
 export enum MessageType {
-	BASE,
+	BASE = 1,
 	MESSAGE,
 	BROADCAST,
 	ROOM_REQUEST_JOIN,

@@ -4,6 +4,9 @@ export interface IOriginalMessage {
 	/** message type enum */
 	messageType?: MessageType|number;
 
+	/** Serialized messagetype */
+	t?: number;
+
 	/** Room id */
 	r?: string;
 

@@ -1,11 +1,11 @@
 import { injectable, singleton } from 'tsyringe';
 import { Room, RoomProperties, RoomStatus } from 'src/models/Room';
 import { DatabaseService } from './DatabaseService';
-import { logger } from 'src/Logger';
 import * as generateId from 'nanoid/generate';
 import { ConfigService } from 'src/config';
 import { EventEmitter } from 'events';
 import { RoomType } from 'src/enums/RoomType';
+import { Client } from 'src/models/Client';
 
 @injectable()
 @singleton()
@@ -13,6 +13,9 @@ export class RoomService extends EventEmitter {
 	private readonly rooms: Map<string, Room>;
 	private readonly roomCodeLength: number;
 	private readonly roomCodeAlphabet: string;
+
+	private adminRoom: Room;
+	private lobbyRoom: Room;
 
 	constructor(private db: DatabaseService, private config: ConfigService) {
 		super();
@@ -23,8 +26,10 @@ export class RoomService extends EventEmitter {
 		this.roomCodeLength = this.config.get('roomcodelength');
 
 		// create some default rooms
-		this.addRoom({ name: '🌟 Admin', maxSize: 50, roomType: RoomType.ADMIN, canClose: false });
-		this.addRoom({ name: '👥 Lobby', roomType: RoomType.CHAT, canClose: false });
+		this.addRoom({ name: '🌟 Admin', maxSize: 50, roomType: RoomType.ADMIN, canClose: false })
+			.then( (r: Room) => this.adminRoom = r);
+		this.addRoom({ name: '👥 Lobby', roomType: RoomType.CHAT, canClose: false })
+			.then( (r: Room) => this.lobbyRoom = r);
 	}
 
 	public getRooms(): Promise<RoomStatus[]> {
@@ -63,6 +68,22 @@ export class RoomService extends EventEmitter {
 		}
 
 		return code.toUpperCase();
+	}
+
+	public addClientToAdminRoom(client: Client): boolean {
+		if (this.adminRoom) {
+			return this.adminRoom.addClient(client);
+		}
+
+		return false;
+	}
+
+	public addClientToLobbyRoom(client: Client): boolean {
+		if (this.lobbyRoom) {
+			return this.lobbyRoom.addClient(client);
+		}
+
+		return false;
 	}
 
 	// - Private --------------

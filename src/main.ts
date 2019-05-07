@@ -14,8 +14,8 @@ process.on('unhandledRejection', err => {
 });
 
 async function bootstrap() {
-	const httpService = container.resolve(FastifyService);
 	const stem = container.resolve(StemService);
+	const httpService = container.resolve(FastifyService);
 
 	try {
 		await httpService.start();
