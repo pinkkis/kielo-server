@@ -11,5 +11,5 @@
 		"outDir": "./dist",
 		"baseUrl": "./"
 	},
-	"exclude": ["node_modules", "src/SocketClient/*"]
+	"exclude": ["node_modules", "src/SocketClient/*", "dist"]
 }

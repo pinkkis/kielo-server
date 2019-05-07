@@ -60,7 +60,8 @@ export class Room extends EventEmitter {
 		return Promise.resolve(true);
 	}
 
-	public broadcast(message: KieloMessage, except: Client[] = []): void {
+	public broadcast(message: KieloMessage, except: Client[] = [], roomCode: boolean = true): void {
+		if (roomCode) { message.roomId = this.id; }
 		this.clients.forEach( (c: Client) => {
 			if (c.socket.readyState === WebSocket.OPEN && !except.includes(c)) {
 				c.socket.send(message.serialized);
@@ -68,8 +69,9 @@ export class Room extends EventEmitter {
 		});
 	}
 
-	public send(message: KieloMessage, client: Client) {
+	public send(message: KieloMessage, client: Client, roomCode: boolean = true) {
 		if (this.clients.has(client.id) && this.clients.get(client.id).socket.readyState === WebSocket.OPEN) {
+			if (roomCode) { message.roomId = this.id; }
 			this.clients.get(client.id).socket.send(message.serialized);
 		}
 	}
@@ -92,7 +94,7 @@ export class Room extends EventEmitter {
 		if (this.hasOpenSlots) {
 			this.clients.set(client.id, client);
 			this.clearReservation(client.id);
-			client.rooms.add(this.id);
+			client.joinRoom(this.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
 		}
@@ -102,7 +104,7 @@ export class Room extends EventEmitter {
 
 	public removeClient(client: Client): boolean {
 		if (this.clients.has(client.id)) {
-			client.rooms.delete(this.id);
+			client.leaveRoom(this.id);
 			this.clients.delete(client.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;

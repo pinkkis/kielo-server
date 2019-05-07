@@ -10,5 +10,8 @@ export interface IOriginalMessage {
 	/** Value for payloads that take single argument */
 	v?: string|number;
 
+	/** Text messages outside of game use */
+	msg?: string;
+
 	[propName: string]: any;
 }

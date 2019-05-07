@@ -7,7 +7,6 @@ import { logger } from 'src/Logger';
 import { ConfigService } from 'src/config';
 import { KieloMessage } from 'src/models/KieloMessage';
 import { MessageType } from 'src/enums/MessageType';
-import { NerveService } from './NerveService';
 import { KieloEvent } from 'src/enums/KieloEvent';
 
 @injectable()
@@ -17,8 +16,9 @@ export class SocketService extends EventEmitter {
 	private clients: Map<string, Client>;
 	private heartbeatInterval: NodeJS.Timeout;
 
-	constructor(private readonly config: ConfigService, private nerve: NerveService) {
+	constructor(private readonly config: ConfigService) {
 		super();
+
 		this.clients = new Map<string, Client>();
 		this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), this.config.get('heartbeatInterval') );
 	}
@@ -27,24 +27,27 @@ export class SocketService extends EventEmitter {
 		const clientId = generateId();
 		const newClient = new Client(clientId, socket);
 
-		newClient.socket.on('message', (message: any) => this.onMessageHandler(newClient, message) );
-		newClient.socket.on('close' , (code: number, reason: string) => this.onCloseHandler(newClient, code, reason) );
-		newClient.socket.on('error', (error: Error) => this.onErrorHandler(newClient, error) );
-		newClient.socket.on('pong', (data: Buffer) => this.onPongHandler(newClient, data) );
+		newClient.socket.on(KieloEvent.WS_MESSAGE, (message: any) => this.onMessageHandler(newClient, message) );
+		newClient.socket.on(KieloEvent.WS_CLOSE , (code: number, reason: string) => this.onCloseHandler(newClient, code, reason) );
+		newClient.socket.on(KieloEvent.WS_ERROR, (error: Error) => this.onErrorHandler(newClient, error) );
+		newClient.socket.on(KieloEvent.WS_PONG, (data: Buffer) => this.onPongHandler(newClient, data) );
 
 		this.clients.set(clientId, newClient);
-		this.emit('connection:new', newClient);
-		logger.info('SocketService#connection:new', newClient.id);
+		this.emit(KieloEvent.SOCKET_CONNECT, newClient);
+		logger.info('SocketService#SOCKET_CONNECT', newClient.id);
 	}
 
-	public onMessageHandler(client: Client, data: string|ArrayBuffer): void {
-		const message = typeof data === 'string' ? KieloMessage.fromString(data)  : KieloMessage.fromArrayBuffer(data);
+	public onMessageHandler(client: Client, data: string | ArrayBuffer): void {
+		const message = typeof data === 'string'
+						? KieloMessage.fromString(data)
+						: KieloMessage.fromArrayBuffer(data);
+
 		this.emit(KieloEvent.CLIENT_MESSAGE, message);
-		logger.info('socket#message', client.id, message.messageType, message.data);
+		logger.info('socket#WS_MESSAGE', client.id, message.messageType, message.data); // TODO: change to 'trace'
 	}
 
 	public onCloseHandler(client: Client, code: number, reason: string): void {
-		logger.info('socket#close', client.id, code, reason);
+		logger.info('socket#WS_CLOSE', client.id, code, reason);
 		if (this.clients.has(client.id)) {
 			this.clients.delete(client.id);
 			this.emit(KieloEvent.CLIENT_DISCONNECT, client.id);
@@ -53,12 +56,12 @@ export class SocketService extends EventEmitter {
 	}
 
 	public onErrorHandler(client: Client, error: Error): void {
-		logger.error('socket#error', client.id, error);
+		logger.error('socket#WS_ERROR', client.id, error);
 		this.emit(KieloEvent.CLIENT_ERROR, {client: client.id, error: error.message});
 	}
 
 	public onPongHandler(client: Client, data: Buffer): void {
-		logger.trace('socket#pong', client.id);
+		logger.trace('socket#WS_PONG', client.id);
 		client.heartBeat(true);
 	}
 
@@ -83,7 +86,7 @@ export class SocketService extends EventEmitter {
 	public setServer(wss: any): void {
 		this.socketServer = wss;
 		this.emit(KieloEvent.SOCKET_AVAILABLE);
-		logger.info('SocketService#available');
+		logger.info('SocketService#SOCKET_AVAILABLE');
 	}
 
 	// TODO: rooms
@@ -111,7 +114,7 @@ export class SocketService extends EventEmitter {
 
 		this.clients.forEach( (client: Client) => {
 			if (!client.isAlive) {
-				logger.info('heartbeat fail', client.id);
+				logger.info('SocketServer:heartbeatFail', client.id);
 				client.socket.terminate();
 				this.clients.delete(client.id);
 				return;

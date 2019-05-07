@@ -1,8 +1,5 @@
 import { SocketClient, MessageType, KieloEvent } from '/client/client.bundle.js';
 
-// import { RoomList } from './common.js';
-// customElements.define('room-list', RoomList);
-
 class App {
 	constructor() {
 		this.ws = new SocketClient();
@@ -10,6 +7,8 @@ class App {
 		this.$clientList = document.getElementById('client-list');
 		this.clients = [];
 		this.rooms = [];
+
+		this.$createRoomButton = document.getElementById('create-room');
 
 		this.initEvents();
 		this.getRooms();
@@ -21,9 +20,27 @@ class App {
 			this.ws.send('', MessageType.ADMIN_JOIN);
 		}, this);
 
-		this.ws.on(KieloEvent.CLIENT_MESSAGE, (msg) => {
-			console.log(msg);
-		}, this);
+		this.ws.on(KieloEvent.CLIENT_MESSAGE, (msg) => this.messageHandler(msg), this);
+
+		this.$createRoomButton.addEventListener('click', async () => {
+			await this.createRoom({ name: 'Random Room ' + Math.floor(Math.random() * 1000) });
+		});
+	}
+
+	messageHandler(message) {
+		console.log(message);
+	}
+
+	async createRoom(data) {
+		const createResult = await fetch('/api/rooms', {
+			method: 'POST',
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		})
+		.then( response => response.json())
+		.then( async () => await this.getRooms());
 	}
 
 	async getRooms() {

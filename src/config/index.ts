@@ -10,7 +10,7 @@ export class ConfigService {
 	private readonly settings: Map<string, any> = new Map<string, any>();
 
 	constructor() {
-		this.settings.set('roomcodealphabet', '1234567890abcdefhkmnprsxyz');
+		this.settings.set('roomcodealphabet', '123456789abcdefghjkmnprstuvwxyz');
 		this.settings.set('roomcodelength', 5);
 		this.settings.set('heartbeatInterval', 10000);
 		this.settings.set('API_ROOT', '/api');
@@ -27,7 +27,7 @@ export class ConfigService {
 				),
 			},
 			logger: {
-				prettyPrint: true,
+				prettyPrint: { colorize: true },
 			},
 			ignoreTrailingSlash: true,
 		} as ServerOptionsAsSecureHttp2);

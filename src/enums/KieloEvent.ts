@@ -13,6 +13,8 @@ export enum KieloEvent {
 	CLIENT_OPEN = 'client:open',
 	CLIENT_DESTROY = 'client:destroy',
 	CLIENT_CREATE = 'client:create',
+	CLIENT_JOIN_ROOM = 'client:joinroom',
+	CLIENT_LEAVE_ROOM = 'client:leaveroom',
 
 	WS_CONNECTION = 'connection',
 	WS_OPEN = 'open',
@@ -22,6 +24,7 @@ export enum KieloEvent {
 	WS_MESSAGE = 'message',
 
 	SOCKET_AVAILABLE = 'socket:available',
+	SOCKET_CONNECT = 'socket:connect',
 
 	APP_READY = 'app:ready',
 	APP_STARTUP_ERROR = 'app:startuperror',

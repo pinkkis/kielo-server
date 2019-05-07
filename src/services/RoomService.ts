@@ -56,13 +56,13 @@ export class RoomService extends EventEmitter {
 	}
 
 	public generateUniqueRoomCode(): string {
-		let code;
+		let code: string;
 
 		while (!code || this.rooms.has(code)) {
 			code = generateId(this.roomCodeAlphabet, this.roomCodeLength);
 		}
 
-		return code;
+		return code.toUpperCase();
 	}
 
 	// - Private --------------

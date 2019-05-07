@@ -4,72 +4,72 @@ import { IOriginalMessage } from './IOriginalMessage';
 
 export class KieloMessage {
 	public messageType: MessageType|number;
-	private serializedMessage: ArrayBuffer;
-	private originalMessage: any;
+	public roomId: string;
+	private message: IOriginalMessage;
 
 	public static fromMessageEvent(event: MessageEvent) {
-		return new KieloMessage(true, event.data, null);
+		return new KieloMessage(event.data, null);
 	}
 
-	public static fromArrayBuffer(input: ArrayBuffer) {
-		return new KieloMessage(true, input, null);
+	public static fromArrayBuffer(ab: ArrayBuffer) {
+		return new KieloMessage(ab, null);
 	}
 
 	public static fromObject(input: IOriginalMessage) {
 		const messageType: MessageType = input.messageType || MessageType.MESSAGE;
 		delete input.messageType;
-		return new KieloMessage(false, input, messageType);
+
+		const roomId: string = input.roomId || '';
+		delete input.roomId;
+
+		return new KieloMessage(input, messageType, roomId);
 	}
 
 	public static fromString(
 		input: string,
 		messageType: MessageType|number = MessageType.MESSAGE,
+		roomId?: string,
 	) {
-		return new KieloMessage(
-			false,
-			{ msg: input },
-			messageType,
-		);
+		return new KieloMessage({ msg: input }, messageType, roomId);
 	}
 
 	constructor(
-		serialized: boolean = false,
 		input: any,
 		messageType?: MessageType|number,
+		roomId?: string,
 	) {
-		if (!serialized) {
-			this.messageType = messageType || MessageType.BASE;
-			this.serialize(input);
-		} else {
-			this.serializedMessage = input;
+		if (input instanceof ArrayBuffer || input instanceof Buffer) {
 			this.deserialize(input);
+		} else {
+			this.messageType = messageType || MessageType.BASE;
+			this.message = input;
+			this.roomId = roomId || '';
 		}
 	}
 
 	public get data(): any {
-		return this.originalMessage;
+		return this.message;
 	}
 
 	public get serialized(): any {
-		return this.serializedMessage;
-	}
-
-	private serialize(input: any): any {
-		this.originalMessage = input;
-		this.serializedMessage = encode({...input, t: this.messageType});
-		return this;
+		return encode({
+			...this.message,
+			t: this.messageType,
+			...this.roomId && { r: this.roomId }, // conditionally add room code to payload
+		});
 	}
 
 	private deserialize(input: any): any {
-		this.serializedMessage = input;
-		this.originalMessage = decode(input, Any);
-		this.messageType = this.originalMessage.t
-			? MessageType[this.originalMessage.t as keyof MessageType]
+		this.message = decode(input, Any);
+
+		this.messageType = this.message.t
+			? MessageType[this.message.t as keyof MessageType]
 			: MessageType.BASE;
 
-		if (this.originalMessage.t) {
-			delete this.originalMessage.t;
-		}
+		this.roomId = this.message.r || '';
+
+		if (this.message.t) { delete this.message.t; }
+		if (this.message.r) { delete this.message.r; }
 
 		return this;
 	}
