@@ -66,6 +66,11 @@ class App {
 			row.querySelector('.reserved .badge').textContent = Object.keys(room.reservations).length;
 			row.querySelector('.room-clients').textContent = room.clients.map( c => c.id ).join(', ');
 
+			if (!room.canClose) {
+				const close = row.querySelector('.close-room');
+				close.parentNode.removeChild(close);
+			}
+
 			this.$roomList.appendChild(row);
 		});
 	}

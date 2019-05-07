@@ -11,6 +11,7 @@ export interface RoomProperties {
 	maxSize?: number;
 	roomType?: RoomType;
 	joinPeriod?: number;
+	canClose?: boolean;
 }
 
 export interface RoomStatus {
@@ -19,6 +20,7 @@ export interface RoomStatus {
 	name?: string;
 	type: RoomType;
 	isOpen: boolean;
+	canClose: boolean;
 	clients: Client[];
 	reservations: Set<string>;
 }
@@ -29,7 +31,8 @@ export class Room extends EventEmitter {
 	public readonly name: string;
 	public readonly clients: Map<string, Client> = new Map<string, Client>();
 
-	public isOpen: boolean;
+	public isOpen: boolean = false;
+	public canClose: boolean = false;
 
 	private maxSize: number = Infinity;
 	private joinPeriod: number = 10000;
@@ -120,6 +123,7 @@ export class Room extends EventEmitter {
 			name: this.name,
 			type: this.type,
 			isOpen: this.isOpen,
+			canClose: this.canClose,
 			clients: Array.from(this.clients.values()),
 			reservations: this.reservedSlots,
 		};

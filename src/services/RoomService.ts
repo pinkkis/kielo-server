@@ -23,8 +23,8 @@ export class RoomService extends EventEmitter {
 		this.roomCodeLength = this.config.get('roomcodelength');
 
 		// create some default rooms
-		this.addRoom({ name: 'Admin Room', maxSize: 50, roomType: RoomType.ADMIN });
-		this.addRoom({ name: 'Lobby', roomType: RoomType.CHAT });
+		this.addRoom({ name: '🌟 Admin', maxSize: 50, roomType: RoomType.ADMIN, canClose: false });
+		this.addRoom({ name: '👥 Lobby', roomType: RoomType.CHAT, canClose: false });
 	}
 
 	public getRooms(): Promise<RoomStatus[]> {
@@ -45,7 +45,7 @@ export class RoomService extends EventEmitter {
 
 	public closeRoom(roomId: string): Promise<boolean> {
 		const room = this.rooms.get(roomId);
-		if (room) {
+		if (room && room.canClose) {
 			room.destroy();
 			this.rooms.delete(room.id);
 
