@@ -38,7 +38,7 @@ export class KieloMessage {
 		messageType?: MessageType|number,
 		roomId?: string,
 	) {
-		if (input instanceof ArrayBuffer || input instanceof Buffer) {
+		if (Object.prototype.toString.call(input) !== '[object Object]') {
 			this.deserialize(input);
 		} else {
 			this.messageType = messageType || MessageType.BASE;

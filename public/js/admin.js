@@ -11,13 +11,14 @@ class App {
 		this.$createRoomButton = document.getElementById('create-room');
 
 		this.initEvents();
-		this.getRooms();
-		this.getClients();
 	}
 
 	initEvents() {
 		this.ws.on(KieloEvent.CLIENT_OPEN, () => {
 			this.ws.send('', MessageType.ADMIN_JOIN);
+
+			this.getRooms();
+			this.getClients();
 		}, this);
 
 		this.ws.on(KieloEvent.CLIENT_MESSAGE, (msg) => this.messageHandler(msg), this);
