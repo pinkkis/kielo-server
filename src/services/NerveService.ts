@@ -1,13 +1,13 @@
 import { singleton, injectable } from 'tsyringe';
 import { ConfigService } from 'src/config';
-import { Observable } from 'rxjs';
+import { EventEmitter } from 'events';
 
 @singleton()
 @injectable()
-export class NerveService {
-	public systemObservable: Observable<any>;
-	public socketObservable: Observable<any>;
+export class NerveService extends EventEmitter {
 
-	constructor(private config: ConfigService) {}
+	constructor(private config: ConfigService) {
+		super();
+	}
 
 }

@@ -1,12 +1,15 @@
 import { EventEmitter } from './events';
 import { KieloMessage } from '../models/KieloMessage';
-import { MessageType } from '../models/MessageType';
+import { MessageType } from '../enums/MessageType';
+import { KieloEvent } from '../enums/KieloEvent';
 
-export { MessageType };
+export { MessageType, KieloEvent };
 
 // TODO: reconnect logic
 export class SocketClient extends EventEmitter {
 	public socket: WebSocket;
+	private reconnect: boolean = true;
+	private reconnectTime: number = 1000;
 
 	constructor(host: string = location.origin.replace(/^http/, 'ws')) {
 		super();
@@ -16,14 +19,23 @@ export class SocketClient extends EventEmitter {
 	}
 
 	public setupEvents(): void {
-		this.socket.addEventListener('message', msg => {
+		this.socket.addEventListener(KieloEvent.WS_MESSAGE, msg => {
 			const message = KieloMessage.fromMessageEvent(msg);
-			this.emit('message', message);
+			this.emit(KieloEvent.CLIENT_MESSAGE, message);
 		});
 
-		this.socket.addEventListener('open', () => {
+		this.socket.addEventListener(KieloEvent.WS_OPEN, () => {
 			this.socket.binaryType = 'arraybuffer';
-			this.emit('open', this);
+			this.reconnectTime = 1000;
+			this.emit(KieloEvent.CLIENT_OPEN, this);
+		});
+
+		this.socket.addEventListener(KieloEvent.WS_CLOSE, (evt: MessageEvent) => {
+			this.emit(KieloEvent.CLIENT_DISCONNECT, this);
+		});
+
+		this.socket.addEventListener(KieloEvent.WS_ERROR, (evt: MessageEvent) => {
+			this.emit(KieloEvent.CLIENT_ERROR, evt);
 		});
 	}
 

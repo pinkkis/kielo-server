@@ -1,4 +1,4 @@
-import { MessageType } from './MessageType';
+import { MessageType } from '../enums/MessageType';
 import { encode, decode, Any } from 'messagepack';
 import { IOriginalMessage } from './IOriginalMessage';
 

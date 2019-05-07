@@ -6,8 +6,9 @@ import * as WebSocket from 'ws';
 import { logger } from 'src/Logger';
 import { ConfigService } from 'src/config';
 import { KieloMessage } from 'src/models/KieloMessage';
-import { MessageType } from 'src/models/MessageType';
+import { MessageType } from 'src/enums/MessageType';
 import { NerveService } from './NerveService';
+import { KieloEvent } from 'src/enums/KieloEvent';
 
 @injectable()
 @singleton()
@@ -38,7 +39,7 @@ export class SocketService extends EventEmitter {
 
 	public onMessageHandler(client: Client, data: string|ArrayBuffer): void {
 		const message = typeof data === 'string' ? KieloMessage.fromString(data)  : KieloMessage.fromArrayBuffer(data);
-
+		this.emit(KieloEvent.CLIENT_MESSAGE, message);
 		logger.info('socket#message', client.id, message.messageType, message.data);
 	}
 
@@ -46,13 +47,14 @@ export class SocketService extends EventEmitter {
 		logger.info('socket#close', client.id, code, reason);
 		if (this.clients.has(client.id)) {
 			this.clients.delete(client.id);
-			this.emit('connection:delete', client.id);
+			this.emit(KieloEvent.CLIENT_DISCONNECT, client.id);
 			client.destroy();
 		}
 	}
 
 	public onErrorHandler(client: Client, error: Error): void {
 		logger.error('socket#error', client.id, error);
+		this.emit(KieloEvent.CLIENT_ERROR, {client: client.id, error: error.message});
 	}
 
 	public onPongHandler(client: Client, data: Buffer): void {
@@ -64,13 +66,13 @@ export class SocketService extends EventEmitter {
 		return this.clients;
 	}
 
-	public getClients(): Client[] {
-		return Array.from(this.clients.values());
+	public getClients(): Promise<Client[]> {
+		return Promise.resolve(Array.from(this.clients.values()));
 	}
 
 	public setServer(wss: any): void {
 		this.socketServer = wss;
-		this.emit('server:available');
+		this.emit(KieloEvent.SOCKET_AVAILABLE);
 		logger.info('SocketService#available');
 	}
 
@@ -94,6 +96,7 @@ export class SocketService extends EventEmitter {
 	private checkHeartbeat(): void {
 		if (this.clients.size) {
 			logger.info('SocketServer:checkHeartbeat', this.clients.size);
+			this.emit(KieloEvent.HEARTBEAT);
 		}
 
 		this.clients.forEach( (client: Client) => {

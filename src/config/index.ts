@@ -10,6 +10,8 @@ export class ConfigService {
 	private readonly settings: Map<string, any> = new Map<string, any>();
 
 	constructor() {
+		this.settings.set('roomcodealphabet', '1234567890abcdefhkmnprsxyz');
+		this.settings.set('roomcodelength', 5);
 		this.settings.set('heartbeatInterval', 10000);
 		this.settings.set('API_ROOT', '/api');
 		this.settings.set('WEB_PORT', Number(process.env.SERVER_PORT) || 3000);

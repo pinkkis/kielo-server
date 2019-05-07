@@ -1,4 +1,3 @@
-import { FOO_VALUE } from './common.js';
 import { SocketClient, MessageType } from '/client/client.bundle.js';
 
 const ws = new SocketClient();
@@ -21,5 +20,5 @@ ws.on('open', () => {
 });
 
 ws.on('message', (msg) => {
-	$debug.value += `${msg.messageType} - ${msg.data.message}\n`;
+	$debug.value += `${msg.messageType} - ${msg.data.msg}\n`;
 }, this);

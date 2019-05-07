@@ -1,11 +1,12 @@
 import { Client } from './Client';
 import { EventEmitter } from 'events';
 import { KieloMessage } from './KieloMessage';
-import { MessageType } from './MessageType';
-import { injectable } from 'tsyringe';
-import { RoomService } from 'dist/services/RoomService';
+import { MessageType } from '../enums/MessageType';
+import { RoomService } from 'src/services/RoomService';
+import { KieloEvent } from 'src/enums/KieloEvent';
 
 export interface RoomProperties {
+	name?: string;
 	maxSize?: number;
 	joinPeriod?: number;
 }
@@ -18,7 +19,6 @@ export interface RoomStatus {
 	reservations: Set<string>;
 }
 
-@injectable()
 export class Room extends EventEmitter {
 	public readonly id: string;
 	public readonly name: string;
@@ -34,6 +34,8 @@ export class Room extends EventEmitter {
 	constructor(private readonly manager: RoomService, roomArgs: RoomProperties = {}) {
 		super();
 
+		this.id = this.manager.generateUniqueRoomCode();
+
 		for (const key in roomArgs) {
 			if (roomArgs.hasOwnProperty(key)) {
 				this[key] = roomArgs[key];
@@ -41,7 +43,7 @@ export class Room extends EventEmitter {
 		}
 
 		this.isOpen = true;
-		this.emit('OPEN', this.id);
+		this.emit(KieloEvent.ROOM_CREATE, this.id);
 	}
 
 	public destroy(force: boolean = false): Promise<boolean> {
@@ -49,7 +51,7 @@ export class Room extends EventEmitter {
 		this.broadcast(KieloMessage.fromObject({ messageType: MessageType.ROOM_CLOSING, r: this.id }));
 		this.clients.clear();
 		this.reservedSlots.clear();
-		this.emit('CLOSE', this.id);
+		this.emit(KieloEvent.ROOM_CLOSE, this.id);
 		return Promise.resolve(true);
 	}
 
@@ -85,6 +87,7 @@ export class Room extends EventEmitter {
 		if (this.hasOpenSlots) {
 			this.clients.set(client.id, client);
 			this.clearReservation(client.id);
+			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
 		}
 
@@ -94,6 +97,7 @@ export class Room extends EventEmitter {
 	public removeClient(client: Client): boolean {
 		if (this.clients.has(client.id)) {
 			this.clients.delete(client.id);
+			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
 		}
 

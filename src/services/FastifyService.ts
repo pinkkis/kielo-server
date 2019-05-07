@@ -1,6 +1,6 @@
 import { injectable, singleton } from 'tsyringe';
 import { ConfigService } from 'src/config';
-import fastify = require('fastify');
+import * as fastify from 'fastify';
 import { IncomingMessage, ServerResponse, Server } from 'http';
 import * as fastifyBlipp from 'fastify-blipp';
 import * as fastifyStatic from 'fastify-static';
@@ -13,6 +13,7 @@ import { SocketService } from './SocketService';
 import { DatabaseService } from './DatabaseService';
 import { logger } from 'src/Logger';
 import * as WebSocket from 'ws';
+import { KieloEvent } from 'src/enums/KieloEvent';
 
 @injectable()
 @singleton()
@@ -43,22 +44,20 @@ export class FastifyService extends EventEmitter {
 	private setupAppEvents(): void {
 		this.server.ready( (err: Error) => {
 			if (err) {
-				this.emit('startupError', err);
+				this.emit(KieloEvent.APP_STARTUP_ERROR, err);
 				throw err;
 			}
 
-			this.emit('ready');
+			this.emit(KieloEvent.APP_READY);
 			logger.info('FastifyServer#ready');
 			this.readyHandler();
 		});
-
-
 	}
 
 	private readyHandler() {
 		this.socketService.setServer(this.server.ws);
 		this.server.ws
-			.on('connection', (socket: WebSocket) => this.socketService.connectionHandler(socket));
+			.on(KieloEvent.WS_CONNECTION, (socket: WebSocket) => this.socketService.connectionHandler(socket));
 	}
 
 	private loadRoutes(): void {
@@ -66,6 +65,6 @@ export class FastifyService extends EventEmitter {
 			this.server.register(r);
 		});
 
-		this.emit('routesloaded');
+		this.emit(KieloEvent.APP_ROUTES_LOADED);
 	}
 }
