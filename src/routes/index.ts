@@ -1,9 +1,9 @@
 import { container } from 'tsyringe';
 
-import { RootController } from './root';
-import { RoomsController } from './rooms';
-import { PublicController } from './public';
-import { AdminController } from './admin';
+import { RootController } from './RootController';
+import { RoomsController } from './RoomsController';
+import { PublicController } from './PublicController';
+import { AdminController } from './AdminController';
 
 const routes = [];
 const roomsRoutes = container.resolve(RoomsController).routes;
