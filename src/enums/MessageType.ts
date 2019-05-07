@@ -11,4 +11,6 @@ export enum MessageType {
 	ROOM_CHANGE,
 	ROOM_CLOSING,
 	CHAT_MESSAGE,
+	ADMIN_JOIN,
+	ADMIN_COMMAND,
 }

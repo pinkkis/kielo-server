@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { injectable, singleton } from 'tsyringe';
-import { Client } from 'src/models/Client';
+import { Client, ClientStatus } from 'src/models/Client';
 import * as generateId from 'nanoid';
 import * as WebSocket from 'ws';
 import { logger } from 'src/Logger';
@@ -66,8 +66,9 @@ export class SocketService extends EventEmitter {
 		return this.clients;
 	}
 
-	public getClients(): Promise<Client[]> {
-		return Promise.resolve(Array.from(this.clients.values()));
+	public getClients(): Promise<ClientStatus[]> {
+		const clients = Array.from(this.clients.values()).map( (c: Client) => c.getStatus());
+		return Promise.resolve(clients);
 	}
 
 	public disconnectClient(clientId: string): Promise<boolean> {
@@ -97,7 +98,7 @@ export class SocketService extends EventEmitter {
 			}
 		});
 
-		return `Transmitted to ${targetsMessaged} clients`;
+		return `Broadcast to ${targetsMessaged} clients`;
 	}
 
 	// ------------

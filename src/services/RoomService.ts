@@ -1,10 +1,11 @@
 import { injectable, singleton } from 'tsyringe';
-import { Room, RoomProperties } from 'src/models/Room';
+import { Room, RoomProperties, RoomStatus } from 'src/models/Room';
 import { DatabaseService } from './DatabaseService';
 import { logger } from 'src/Logger';
 import * as generateId from 'nanoid/generate';
 import { ConfigService } from 'src/config';
 import { EventEmitter } from 'events';
+import { RoomType } from 'src/enums/RoomType';
 
 @injectable()
 @singleton()
@@ -20,10 +21,15 @@ export class RoomService extends EventEmitter {
 
 		this.roomCodeAlphabet = this.config.get('roomcodealphabet');
 		this.roomCodeLength = this.config.get('roomcodelength');
+
+		// create some default rooms
+		this.addRoom({ name: 'Admin Room', maxSize: 50, roomType: RoomType.ADMIN });
+		this.addRoom({ name: 'Lobby', roomType: RoomType.CHAT });
 	}
 
-	public getRooms(): Promise<Room[]> {
-		return Promise.resolve(Array.from(this.rooms.values()));
+	public getRooms(): Promise<RoomStatus[]> {
+		const results = Array.from(this.rooms.values()).map( (r: Room) => r.getStatus() );
+		return Promise.resolve(results);
 	}
 
 	public getRoom(id: string): Promise<Room> {

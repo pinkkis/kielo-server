@@ -6,9 +6,9 @@ export class RoomList extends LitElement {
 		this.message = 'loading...';
 	}
 
-	_createRoot() {
-		return true;
-	}
+	// _createRoot() {
+	// 	return true;
+	// }
 
 	render() {
 		return html`

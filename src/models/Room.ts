@@ -4,16 +4,20 @@ import { KieloMessage } from './KieloMessage';
 import { MessageType } from '../enums/MessageType';
 import { RoomService } from 'src/services/RoomService';
 import { KieloEvent } from 'src/enums/KieloEvent';
+import { RoomType } from 'src/enums/RoomType';
 
 export interface RoomProperties {
 	name?: string;
 	maxSize?: number;
+	roomType?: RoomType;
 	joinPeriod?: number;
 }
 
 export interface RoomStatus {
 	id: string;
 	maxSize: number;
+	name?: string;
+	type: RoomType;
 	isOpen: boolean;
 	clients: Client[];
 	reservations: Set<string>;
@@ -21,6 +25,7 @@ export interface RoomStatus {
 
 export class Room extends EventEmitter {
 	public readonly id: string;
+	public readonly type: RoomType;
 	public readonly name: string;
 	public readonly clients: Map<string, Client> = new Map<string, Client>();
 
@@ -34,14 +39,14 @@ export class Room extends EventEmitter {
 	constructor(private readonly manager: RoomService, roomArgs: RoomProperties = {}) {
 		super();
 
-		this.id = this.manager.generateUniqueRoomCode();
-
 		for (const key in roomArgs) {
 			if (roomArgs.hasOwnProperty(key)) {
 				this[key] = roomArgs[key];
 			}
 		}
 
+		this.id = this.manager.generateUniqueRoomCode();
+		this.type = this.type || RoomType.CHAT;
 		this.isOpen = true;
 		this.emit(KieloEvent.ROOM_CREATE, this.id);
 	}
@@ -87,6 +92,7 @@ export class Room extends EventEmitter {
 		if (this.hasOpenSlots) {
 			this.clients.set(client.id, client);
 			this.clearReservation(client.id);
+			client.rooms.add(this.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
 		}
@@ -96,6 +102,7 @@ export class Room extends EventEmitter {
 
 	public removeClient(client: Client): boolean {
 		if (this.clients.has(client.id)) {
+			client.rooms.delete(this.id);
 			this.clients.delete(client.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
@@ -104,14 +111,16 @@ export class Room extends EventEmitter {
 		return false;
 	}
 
-	public getStatus(): Promise<RoomStatus> {
-		return Promise.resolve({
+	public getStatus(): RoomStatus {
+		return {
 			id: this.id,
 			maxSize: this.maxSize,
+			name: this.name,
+			type: this.type,
 			isOpen: this.isOpen,
 			clients: Array.from(this.clients.values()),
 			reservations: this.reservedSlots,
-		});
+		};
 	}
 
 	// - Private -------------------------------

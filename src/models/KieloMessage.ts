@@ -23,7 +23,7 @@ export class KieloMessage {
 
 	public static fromString(
 		input: string,
-		messageType: MessageType = MessageType.MESSAGE,
+		messageType: MessageType|number = MessageType.MESSAGE,
 	) {
 		return new KieloMessage(
 			false,
