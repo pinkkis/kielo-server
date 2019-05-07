@@ -70,6 +70,15 @@ export class SocketService extends EventEmitter {
 		return Promise.resolve(Array.from(this.clients.values()));
 	}
 
+	public disconnectClient(clientId: string): Promise<boolean> {
+		if (this.clients.has(clientId)) {
+			this.clients.get(clientId).destroy();
+			return Promise.resolve(true);
+		}
+
+		return Promise.resolve(false);
+	}
+
 	public setServer(wss: any): void {
 		this.socketServer = wss;
 		this.emit(KieloEvent.SOCKET_AVAILABLE);

@@ -26,6 +26,22 @@ export class AdminController {
 					},
 				);
 			}),
+			fp(async (server, opts, next) => {
+				server.get(
+					this.PREFIX + '/clients',
+					async (req, res) => {
+						return this.socketService.getClients();
+					},
+				);
+			}),
+			fp(async (server, opts, next) => {
+				server.delete(
+					this.PREFIX + '/clients/:clientId',
+					async (req, res) => {
+						return this.socketService.disconnectClient(req.params.clientId);
+					},
+				);
+			}),
 		];
 	}
 }

@@ -11,6 +11,8 @@ export enum KieloEvent {
 	CLIENT_ERROR = 'client:error',
 	CLIENT_MESSAGE = 'client:message',
 	CLIENT_OPEN = 'client:open',
+	CLIENT_DESTROY = 'client:destroy',
+	CLIENT_CREATE = 'client:create',
 
 	WS_CONNECTION = 'connection',
 	WS_OPEN = 'open',
