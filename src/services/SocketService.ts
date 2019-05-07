@@ -13,12 +13,12 @@ import { NerveService } from './NerveService';
 @singleton()
 export class SocketService extends EventEmitter {
 	private socketServer: any;
-	private connections: Map<string, Client>;
+	private clients: Map<string, Client>;
 	private heartbeatInterval: NodeJS.Timeout;
 
 	constructor(private readonly config: ConfigService, private nerve: NerveService) {
 		super();
-		this.connections = new Map<string, Client>();
+		this.clients = new Map<string, Client>();
 		this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), this.config.get('heartbeatInterval') );
 	}
 
@@ -31,7 +31,7 @@ export class SocketService extends EventEmitter {
 		newClient.socket.on('error', (error: Error) => this.onErrorHandler(newClient, error) );
 		newClient.socket.on('pong', (data: Buffer) => this.onPongHandler(newClient, data) );
 
-		this.connections.set(clientId, newClient);
+		this.clients.set(clientId, newClient);
 		this.emit('connection:new', newClient);
 		logger.info('SocketService#connection:new', newClient.id);
 	}
@@ -44,8 +44,8 @@ export class SocketService extends EventEmitter {
 
 	public onCloseHandler(client: Client, code: number, reason: string): void {
 		logger.info('socket#close', client.id, code, reason);
-		if (this.connections.has(client.id)) {
-			this.connections.delete(client.id);
+		if (this.clients.has(client.id)) {
+			this.clients.delete(client.id);
 			this.emit('connection:delete', client.id);
 			client.destroy();
 		}
@@ -61,11 +61,11 @@ export class SocketService extends EventEmitter {
 	}
 
 	public getConnections(): Map<string, Client> {
-		return this.connections;
+		return this.clients;
 	}
 
 	public getClients(): Client[] {
-		return Array.from(this.connections.values());
+		return Array.from(this.clients.values());
 	}
 
 	public setServer(wss: any): void {
@@ -74,13 +74,13 @@ export class SocketService extends EventEmitter {
 		logger.info('SocketService#available');
 	}
 
-	public broadcast(message: string, rooms?: string[]): any {
-		const targets = this.connections;
+	// TODO: rooms
+	public broadcast(message: string, rooms: string[] = [], except: Client[] = []): any {
 		let targetsMessaged = 0;
 		const mm = KieloMessage.fromString(message, MessageType.BROADCAST);
 
-		targets.forEach( (client: Client) => {
-			if (client.socket.readyState === WebSocket.OPEN) {
+		this.clients.forEach( (client: Client) => {
+			if (client.socket.readyState === WebSocket.OPEN && !except.includes(client)) {
 				client.socket.send(mm.serialized);
 				targetsMessaged++;
 			}
@@ -92,17 +92,19 @@ export class SocketService extends EventEmitter {
 	// ------------
 
 	private checkHeartbeat(): void {
-		if (this.connections.size) {
-			logger.info('SocketServer:checkHeartbeat', this.connections.size);
+		if (this.clients.size) {
+			logger.info('SocketServer:checkHeartbeat', this.clients.size);
 		}
 
-		this.connections.forEach( (client: Client) => {
+		this.clients.forEach( (client: Client) => {
 			if (!client.isAlive) {
 				logger.info('heartbeat fail', client.id);
-				return client.socket.terminate();
+				client.socket.terminate();
+				this.clients.delete(client.id);
+				return;
 			}
 
-			if (client.socket.OPEN) {
+			if (client.socket.readyState === WebSocket.OPEN) {
 				client.heartBeat();
 				client.socket.ping();
 			}
@@ -113,13 +115,13 @@ export class SocketService extends EventEmitter {
 		clearInterval(this.heartbeatInterval);
 	}
 
-	// private getClientBySocket(ws: WebSocket): Client {
-	// 	for (const client of this.connections.values()) {
-	// 		if (client.socket === ws) {
-	// 			return client;
-	// 		}
-	// 	}
+	private getClientBySocket(ws: WebSocket): Client {
+		for (const client of this.clients.values()) {
+			if (client.socket === ws) {
+				return client;
+			}
+		}
 
-	// 	return null;
-	// }
+		return null;
+	}
 }

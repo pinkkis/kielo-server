@@ -2,7 +2,8 @@ import { Client } from './Client';
 import { EventEmitter } from 'events';
 import { KieloMessage } from './KieloMessage';
 import { MessageType } from './MessageType';
-import { IOriginalMessage } from './IOriginalMessage';
+import { injectable } from 'tsyringe';
+import { RoomService } from 'dist/services/RoomService';
 
 export interface RoomProperties {
 	maxSize?: number;
@@ -17,6 +18,7 @@ export interface RoomStatus {
 	reservations: Set<string>;
 }
 
+@injectable()
 export class Room extends EventEmitter {
 	public readonly id: string;
 	public readonly name: string;
@@ -29,7 +31,7 @@ export class Room extends EventEmitter {
 
 	private reservedSlots: Set<string> = new Set<string>();
 
-	constructor(roomArgs: RoomProperties = {}) {
+	constructor(private readonly manager: RoomService, roomArgs: RoomProperties = {}) {
 		super();
 
 		for (const key in roomArgs) {
@@ -51,10 +53,18 @@ export class Room extends EventEmitter {
 		return Promise.resolve(true);
 	}
 
-	public broadcast(message: KieloMessage): void {
+	public broadcast(message: KieloMessage, except: Client[] = []): void {
 		this.clients.forEach( (c: Client) => {
-			c.socket.send(message.serialized);
+			if (c.socket.readyState === WebSocket.OPEN && !except.includes(c)) {
+				c.socket.send(message.serialized);
+			}
 		});
+	}
+
+	public send(message: KieloMessage, client: Client) {
+		if (this.clients.has(client.id) && this.clients.get(client.id).socket.readyState === WebSocket.OPEN) {
+			this.clients.get(client.id).socket.send(message.serialized);
+		}
 	}
 
 	public get hasOpenSlots(): boolean {
