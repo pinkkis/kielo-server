@@ -20,7 +20,7 @@ export class RoomService extends EventEmitter {
 
 	constructor(private db: DatabaseService, private config: ConfigService) {
 		super();
-
+		logger.info('🏠 Starting Room Service');
 		this.rooms = new Map<string, Room>();
 
 		this.roomCodeAlphabet = this.config.get('roomcodealphabet');
@@ -31,6 +31,7 @@ export class RoomService extends EventEmitter {
 			.then( (r: Room) => this.adminRoom = r);
 		this.addRoom({ name: '👥 Lobby', type: RoomType.CHAT, canClose: false })
 			.then( (r: Room) => this.lobbyRoom = r);
+
 	}
 
 	public getRooms(): Promise<RoomStatus[]> {

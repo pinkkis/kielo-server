@@ -10,13 +10,14 @@ export class ConfigService {
 
 	constructor() {
 		this.settings.set('roomcodealphabet', '123456789abcdefghjkmnprstuvwxyz');
-		this.settings.set('roomcodelength', 5);
-		this.settings.set('heartbeatInterval', 10000);
+		this.settings.set('roomcodelength', Number(process.env.ROOM_CODE_LENGTH) || 5);
+		this.settings.set('heartbeatInterval', Number(process.env.HEARTBEAT_INTERVAL) || 10000);
 		this.settings.set('API_ROOT', '/api');
 		this.settings.set('WEB_PORT', Number(process.env.SERVER_PORT) || 3000);
+		this.settings.set('appLogger', process.env.APP_LOGGER !== undefined ? process.env.APP_LOGGER === 'true' : true);
 		this.settings.set('fastifyListenOptions', {
 			port: this.settings.get('WEB_PORT'),
-			host: '0.0.0.0',
+			host: process.env.HOST_LISTEN || '0.0.0.0',
 		} as ListenOptions);
 		this.settings.set('fastifyOptions', {
 			http2: true,
@@ -29,10 +30,9 @@ export class ConfigService {
 					resolve(__dirname, '..', '..', 'certificates', 'cert.pem'),
 				),
 			},
-			// logger: {
-			// 	prettyPrint: { colorize: true },
-			// },
 			ignoreTrailingSlash: true,
+			// enable fastify logging
+			...process.env.HTTP_LOGGER === 'true' && {logger: { prettyPrint: { colorize: true } } },
 		} as ServerOptionsAsSecureHttp2);
 
 		this.setReadOnly();

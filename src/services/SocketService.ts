@@ -19,7 +19,7 @@ export class SocketService extends EventEmitter {
 
 	constructor(private readonly config: ConfigService) {
 		super();
-
+		logger.info('🔌 Starting Socket Service');
 		this.clients = new Map<string, Client>();
 		this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), this.config.get('heartbeatInterval') );
 	}

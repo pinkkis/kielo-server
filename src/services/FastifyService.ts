@@ -26,6 +26,7 @@ export class FastifyService extends EventEmitter {
 
 	constructor(private config: ConfigService, private socketService: SocketService, private dbService: DatabaseService) {
 		super();
+		logger.info('🕸 Starting Fastify Service');
 
 		this.server = fastify(this.config.get('fastifyOptions'));
 		this.server.register(fastifyWs);

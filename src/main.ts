@@ -1,5 +1,8 @@
 import 'reflect-metadata';
-import 'dotenv';
+import { config } from 'dotenv';
+
+config();
+
 import { container } from 'tsyringe';
 import { KieloApp } from './models/KieloApp';
 

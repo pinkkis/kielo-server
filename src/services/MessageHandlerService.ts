@@ -11,6 +11,8 @@ import { RoomService } from './RoomService';
 export class MessageHandlerService extends EventEmitter {
 	constructor(private rooms: RoomService) {
 		super();
+
+		logger.info('📧 Starting MessageHandler Service');
 	}
 
 	public handleClientMessage(message: KieloMessage, client: Client) {

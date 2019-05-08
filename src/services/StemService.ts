@@ -21,12 +21,10 @@ export class StemService extends EventEmitter {
 		private messageHandlers: MessageHandlerService,
 	) {
 		super();
-
+		logger.info('🌿 Starting Stem Service');
 		this.setupFastifyServiceEvents();
 		this.setupSocketServiceEvents();
 		this.setupRoomServiceEvents();
-
-		logger.info('🌟🌟 Started Nerve Service');
 	}
 
 	public destroy() {
