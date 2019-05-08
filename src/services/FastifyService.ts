@@ -8,12 +8,16 @@ import * as fastifyWs from 'fastify-ws';
 import { routes } from '../routes';
 import { resolve } from 'path';
 import { EventEmitter } from 'events';
-import { IKieloHttpServer } from 'src/models/IKieloHttpServer';
 import { SocketService } from './SocketService';
 import { DatabaseService } from './DatabaseService';
 import { logger } from 'src/Logger';
 import * as WebSocket from 'ws';
 import { KieloEvent } from 'src/enums/KieloEvent';
+
+export interface IKieloHttpServer {
+	blipp?: any;
+	ws?: any;
+}
 
 @injectable()
 @singleton()
@@ -36,9 +40,15 @@ export class FastifyService extends EventEmitter {
 	}
 
 	public async start(): Promise<any> {
-		await this.server.listen(this.config.get('WEB_PORT'));
-		this.server.blipp();
-		return Promise.resolve(true);
+		return this.server
+				.listen(this.config.get('fastifyListenOptions') as fastify.ListenOptions)
+				.then( () => {
+					this.server.blipp();
+				});
+	}
+
+	public destroy(): void {
+		this.server.close();
 	}
 
 	private setupAppEvents(): void {

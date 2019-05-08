@@ -29,9 +29,15 @@ export class StemService extends EventEmitter {
 		logger.info('🌟🌟 Started Nerve Service');
 	}
 
+	public destroy() {
+		// remove all event handlers and shutdown gracefully
+	}
+
 	// Setup methods
 
-	private setupRoomServiceEvents() {}
+	private setupRoomServiceEvents() {
+		//
+	}
 
 	private setupSocketServiceEvents() {
 		this.socket.on(KieloEvent.CLIENT_MESSAGE, (message: KieloMessage, client: Client) => {
@@ -39,7 +45,9 @@ export class StemService extends EventEmitter {
 		});
 	}
 
-	private setupFastifyServiceEvents() {}
+	private setupFastifyServiceEvents() {
+		//
+	}
 
 	// Message Handler
 }

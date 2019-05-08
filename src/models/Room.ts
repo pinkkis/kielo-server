@@ -5,11 +5,13 @@ import { MessageType } from '../enums/MessageType';
 import { RoomService } from 'src/services/RoomService';
 import { KieloEvent } from 'src/enums/KieloEvent';
 import { RoomType } from 'src/enums/RoomType';
+import { logger } from 'src/Logger';
+import { KieloMessageFactory } from './KieloMessageFactory';
 
 export interface RoomProperties {
 	name?: string;
 	maxSize?: number;
-	roomType?: RoomType;
+	type?: RoomType;
 	joinPeriod?: number;
 	canClose?: boolean;
 }
@@ -52,14 +54,16 @@ export class Room extends EventEmitter {
 		this.type = this.type || RoomType.CHAT;
 		this.isOpen = true;
 		this.emit(KieloEvent.ROOM_CREATE, this.id);
+		logger.info(`Room:ctor - ${this.id}`);
 	}
 
 	public destroy(force: boolean = false): Promise<boolean> {
 		this.isOpen = false;
-		this.broadcast(KieloMessage.fromObject({ messageType: MessageType.ROOM_CLOSING, r: this.id }));
+		this.broadcast(KieloMessageFactory.fromObject({ messageType: MessageType.ROOM_CLOSING, r: this.id }));
 		this.clients.clear();
 		this.reservedSlots.clear();
 		this.emit(KieloEvent.ROOM_CLOSE, this.id);
+		logger.info(`Room:destroy - ${this.id}`);
 		return Promise.resolve(true);
 	}
 
@@ -70,6 +74,8 @@ export class Room extends EventEmitter {
 				c.socket.send(message.serialized);
 			}
 		});
+
+		logger.info(`Room:broadcast - ${this.id} -> ${message.data}`);
 	}
 
 	public send(message: KieloMessage, client: Client, roomCode: boolean = true) {
@@ -77,6 +83,8 @@ export class Room extends EventEmitter {
 			if (roomCode) { message.roomId = this.id; }
 			this.clients.get(client.id).socket.send(message.serialized);
 		}
+
+		logger.info(`Room:send - ${this.id} -> ${message.data}`);
 	}
 
 	public get hasOpenSlots(): boolean {
@@ -99,6 +107,7 @@ export class Room extends EventEmitter {
 			this.clearReservation(client.id);
 			client.joinRoom(this);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
+			logger.info(`Room:addClient - ${this.id} -> ${client.id}`);
 			return true;
 		}
 
@@ -110,6 +119,7 @@ export class Room extends EventEmitter {
 			client.leaveRoom(this);
 			this.clients.delete(client.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
+			logger.info(`Room:removeClient - ${this.id} -> ${client.id}`);
 			return true;
 		}
 
@@ -133,5 +143,6 @@ export class Room extends EventEmitter {
 
 	private clearReservation(id: string): void {
 		this.reservedSlots.delete(id);
+		logger.info(`Room:clearReservation - ${this.id}`);
 	}
 }

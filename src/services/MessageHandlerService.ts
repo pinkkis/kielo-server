@@ -37,19 +37,19 @@ export class MessageHandlerService extends EventEmitter {
 	}
 
 	public onAdminJoin(message: KieloMessage, client: Client) {
-		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+		logger.info(`MessageHandlerService: ${client.id} request ${MessageType[message.messageType]}`);
 		this.rooms.addClientToAdminRoom(client);
 	}
 
 	public onRoomRequestCreate(message: KieloMessage, client: Client) {
-		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+		logger.info(`MessageHandlerService: ${client.id} request ${MessageType[message.messageType]}`);
 	}
 
 	public onRoomRequestJoin(message: KieloMessage, client: Client) {
-		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+		logger.info(`MessageHandlerService: ${client.id} request ${MessageType[message.messageType]}`);
 	}
 
 	public onRoomRequestLeave(message: KieloMessage, client: Client) {
-		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+		logger.info(`MessageHandlerService: ${client.id} request ${MessageType[message.messageType]}`);
 	}
 }

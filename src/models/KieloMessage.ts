@@ -1,37 +1,29 @@
 import { MessageType } from '../enums/MessageType';
-import { encode, decode, Any } from 'messagepack';
-import { IOriginalMessage } from './IOriginalMessage';
+import { KieloSerializer } from 'src/services/KieloSerializer';
+
+export interface IOriginalMessage {
+	/** message type enum value */
+	messageType?: number;
+
+	/** Serialized messagetype */
+	t?: number;
+
+	/** Room id */
+	r?: string;
+
+	/** Value for payloads that take single argument */
+	v?: string|number;
+
+	/** Text messages outside of game use */
+	msg?: string;
+
+	[propName: string]: any;
+}
 
 export class KieloMessage {
 	public messageType: number;
 	public roomId: string;
 	private message: IOriginalMessage;
-
-	public static fromMessageEvent(event: MessageEvent) {
-		return new KieloMessage(event.data, null);
-	}
-
-	public static fromArrayBuffer(ab: ArrayBuffer) {
-		return new KieloMessage(ab, null);
-	}
-
-	public static fromObject(input: IOriginalMessage) {
-		const messageType: MessageType = input.messageType || MessageType.MESSAGE;
-		delete input.messageType;
-
-		const roomId: string = input.roomId || '';
-		delete input.roomId;
-
-		return new KieloMessage(input, messageType, roomId);
-	}
-
-	public static fromString(
-		input: string,
-		messageType: MessageType = MessageType.MESSAGE,
-		roomId?: string,
-	) {
-		return new KieloMessage({ msg: input }, messageType, roomId);
-	}
 
 	constructor(
 		input: any,
@@ -52,7 +44,7 @@ export class KieloMessage {
 	}
 
 	public get serialized(): any {
-		return encode({
+		return KieloSerializer.serialize({
 			...this.message,
 			t: this.messageType,
 			...this.roomId && { r: this.roomId }, // conditionally add room code to payload
@@ -60,7 +52,7 @@ export class KieloMessage {
 	}
 
 	private deserialize(input: any): any {
-		this.message = decode(input, Any);
+		this.message = KieloSerializer.deserialize(input);
 
 		this.messageType = this.message.t || MessageType.BASE;
 		this.roomId = this.message.r || '';

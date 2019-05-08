@@ -2,6 +2,7 @@ import { EventEmitter } from './events';
 import { KieloMessage } from '../models/KieloMessage';
 import { MessageType } from '../enums/MessageType';
 import { KieloEvent } from '../enums/KieloEvent';
+import { KieloMessageFactory } from '../models/KieloMessageFactory';
 
 export { MessageType, KieloEvent };
 
@@ -20,7 +21,7 @@ export class SocketClient extends EventEmitter {
 
 	public setupEvents(): void {
 		this.socket.addEventListener(KieloEvent.WS_MESSAGE, msg => {
-			const message = KieloMessage.fromMessageEvent(msg);
+			const message = KieloMessageFactory.fromMessageEvent(msg);
 			this.emit(KieloEvent.CLIENT_MESSAGE, message);
 		});
 
@@ -43,9 +44,9 @@ export class SocketClient extends EventEmitter {
 		let msg: KieloMessage;
 
 		if (typeof message === 'string') {
-			msg = KieloMessage.fromString(message, messageType || MessageType.MESSAGE);
+			msg = KieloMessageFactory.fromString(message, messageType || MessageType.MESSAGE);
 		} else if (typeof message === 'object') {
-			msg = KieloMessage.fromObject(message);
+			msg = KieloMessageFactory.fromObject(message);
 		} else {
 			msg = message;
 		}

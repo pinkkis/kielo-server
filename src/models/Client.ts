@@ -2,6 +2,7 @@ import * as WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { KieloEvent } from 'src/enums/KieloEvent';
 import { Room } from './Room';
+import { logger } from 'dist/Logger';
 
 export interface ClientStatus {
 	id: string;
@@ -23,16 +24,19 @@ export class Client extends EventEmitter {
 		this.socket = socket;
 		this.isAlive = true;
 		this.emit(KieloEvent.CLIENT_CREATE, this);
+		logger.info(`Client:ctor - ${this.id}`);
 	}
 
 	public joinRoom(room: Room): void {
 		this.rooms.add(room);
 		this.emit(KieloEvent.CLIENT_JOIN_ROOM, room);
+		logger.info(`Client:joinRoom - ${this.id} -> ${room.id}`);
 	}
 
 	public leaveRoom(room: Room): void {
 		this.rooms.delete(room);
 		this.emit(KieloEvent.CLIENT_LEAVE_ROOM, room);
+		logger.info(`Client:leaveRoom - ${this.id} -> ${room.id}`);
 	}
 
 	public heartBeat(hasHeartBeat: boolean = false) {
@@ -44,6 +48,7 @@ export class Client extends EventEmitter {
 		this.socket.terminate();
 		this.rooms.clear();
 		this.isAlive = false;
+		logger.info(`Client:destroy - ${this.id}`);
 	}
 
 	public getStatus(): ClientStatus {

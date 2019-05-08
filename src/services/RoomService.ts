@@ -6,6 +6,7 @@ import { ConfigService } from 'src/config';
 import { EventEmitter } from 'events';
 import { RoomType } from 'src/enums/RoomType';
 import { Client } from 'src/models/Client';
+import { logger } from 'src/Logger';
 
 @injectable()
 @singleton()
@@ -26,9 +27,9 @@ export class RoomService extends EventEmitter {
 		this.roomCodeLength = this.config.get('roomcodelength');
 
 		// create some default rooms
-		this.addRoom({ name: '🌟 Admin', maxSize: 50, roomType: RoomType.ADMIN, canClose: false })
+		this.addRoom({ name: '🌟 Admin', maxSize: 50, type: RoomType.ADMIN, canClose: false })
 			.then( (r: Room) => this.adminRoom = r);
-		this.addRoom({ name: '👥 Lobby', roomType: RoomType.CHAT, canClose: false })
+		this.addRoom({ name: '👥 Lobby', type: RoomType.CHAT, canClose: false })
 			.then( (r: Room) => this.lobbyRoom = r);
 	}
 
@@ -44,7 +45,7 @@ export class RoomService extends EventEmitter {
 	public addRoom(roomArgs: RoomProperties = {}): Promise<Room> {
 		const room = new Room(this, roomArgs);
 		this.rooms.set(room.id, room);
-
+		logger.info(`RoomService:addRoom - ${room.id}, ${RoomType[room.type]}, ${room.name}`);
 		return Promise.resolve(room);
 	}
 
@@ -53,10 +54,11 @@ export class RoomService extends EventEmitter {
 		if (room && room.canClose) {
 			room.destroy();
 			this.rooms.delete(room.id);
-
+			logger.info(`RoomService:closeRoom - ${room.id}`);
 			return Promise.resolve(true);
 		}
 
+		logger.warning(`RoomService:closeRoom - ${room.id}`);
 		return Promise.resolve(false);
 	}
 

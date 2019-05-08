@@ -1,5 +1,5 @@
 export enum RoomType {
-	ADMIN,
+	ADMIN = 1,
 	GAME,
 	CHAT,
 }

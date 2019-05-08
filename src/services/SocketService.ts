@@ -8,6 +8,7 @@ import { ConfigService } from 'src/config';
 import { KieloMessage } from 'src/models/KieloMessage';
 import { MessageType } from 'src/enums/MessageType';
 import { KieloEvent } from 'src/enums/KieloEvent';
+import { KieloMessageFactory } from 'src/models/KieloMessageFactory';
 
 @injectable()
 @singleton()
@@ -39,8 +40,8 @@ export class SocketService extends EventEmitter {
 
 	public onMessageHandler(client: Client, data: string | ArrayBuffer): void {
 		const message = typeof data === 'string'
-						? KieloMessage.fromString(data)
-						: KieloMessage.fromArrayBuffer(data);
+						? KieloMessageFactory.fromString(data)
+						: KieloMessageFactory.fromArrayBuffer(data);
 
 		this.emit(KieloEvent.CLIENT_MESSAGE, message, client);
 		logger.info('socket#WS_MESSAGE', client.id, message.messageType, message.data); // TODO: change to 'trace'
@@ -76,6 +77,7 @@ export class SocketService extends EventEmitter {
 
 	public disconnectClient(clientId: string): Promise<boolean> {
 		if (this.clients.has(clientId)) {
+			logger.info(`SocketService:Disconnecting client room ${clientId}`);
 			this.clients.get(clientId).destroy();
 			return Promise.resolve(true);
 		}
@@ -92,7 +94,7 @@ export class SocketService extends EventEmitter {
 	// TODO: rooms
 	public broadcast(message: string, rooms: string[] = [], except: Client[] = []): any {
 		let targetsMessaged = 0;
-		const mm = KieloMessage.fromString(message, MessageType.BROADCAST);
+		const mm = KieloMessageFactory.fromString(message, MessageType.BROADCAST);
 
 		this.clients.forEach( (client: Client) => {
 			if (client.socket.readyState === WebSocket.OPEN && !except.includes(client)) {
@@ -101,6 +103,7 @@ export class SocketService extends EventEmitter {
 			}
 		});
 
+		logger.info(`ScoketService:broadcast "${message}"`);
 		return `Broadcast to ${targetsMessaged} clients`;
 	}
 
