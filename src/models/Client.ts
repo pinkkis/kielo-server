@@ -1,6 +1,7 @@
 import * as WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { KieloEvent } from 'src/enums/KieloEvent';
+import { Room } from './Room';
 
 export interface ClientStatus {
 	id: string;
@@ -13,7 +14,7 @@ export class Client extends EventEmitter {
 	public readonly id: string;
 	public socket: WebSocket;
 	public isAlive: boolean;
-	private rooms: Set<string> = new Set<string>();
+	private rooms: Set<Room> = new Set<Room>();
 
 	constructor(id: string, socket: WebSocket) {
 		super();
@@ -24,14 +25,14 @@ export class Client extends EventEmitter {
 		this.emit(KieloEvent.CLIENT_CREATE, this);
 	}
 
-	public joinRoom(roomId: string): void {
-		this.rooms.add(roomId);
-		this.emit(KieloEvent.CLIENT_JOIN_ROOM, roomId);
+	public joinRoom(room: Room): void {
+		this.rooms.add(room);
+		this.emit(KieloEvent.CLIENT_JOIN_ROOM, room);
 	}
 
-	public leaveRoom(roomId: string): void {
-		this.rooms.add(roomId);
-		this.emit(KieloEvent.CLIENT_LEAVE_ROOM, roomId);
+	public leaveRoom(room: Room): void {
+		this.rooms.delete(room);
+		this.emit(KieloEvent.CLIENT_LEAVE_ROOM, room);
 	}
 
 	public heartBeat(hasHeartBeat: boolean = false) {
@@ -39,10 +40,10 @@ export class Client extends EventEmitter {
 	}
 
 	public destroy() {
+		this.emit(KieloEvent.CLIENT_DESTROY, this.id);
 		this.socket.terminate();
 		this.rooms.clear();
 		this.isAlive = false;
-		this.emit(KieloEvent.CLIENT_DESTROY, this.id);
 	}
 
 	public getStatus(): ClientStatus {
@@ -50,7 +51,7 @@ export class Client extends EventEmitter {
 			id: this.id,
 			ip: (this.socket as any)._socket.remoteAddress,
 			isAlive: this.isAlive,
-			rooms: Array.from(this.rooms),
+			rooms: Array.from(this.rooms).map( (r: Room) => r.id ),
 		};
 	}
 }

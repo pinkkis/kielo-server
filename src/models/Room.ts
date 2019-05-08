@@ -97,7 +97,7 @@ export class Room extends EventEmitter {
 		if (this.hasOpenSlots) {
 			this.clients.set(client.id, client);
 			this.clearReservation(client.id);
-			client.joinRoom(this.id);
+			client.joinRoom(this);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;
 		}
@@ -107,7 +107,7 @@ export class Room extends EventEmitter {
 
 	public removeClient(client: Client): boolean {
 		if (this.clients.has(client.id)) {
-			client.leaveRoom(this.id);
+			client.leaveRoom(this);
 			this.clients.delete(client.id);
 			this.emit(KieloEvent.ROOM_JOIN, {room: this.id, client: client.id});
 			return true;

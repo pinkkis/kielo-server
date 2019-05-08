@@ -16,7 +16,19 @@ export class MessageHandlerService extends EventEmitter {
 	public handleClientMessage(message: KieloMessage, client: Client) {
 		switch (message.messageType) {
 			case MessageType.ADMIN_JOIN:
-				this.onAdminJoin(client);
+				this.onAdminJoin(message, client);
+				break;
+
+			case MessageType.ROOM_REQUEST_CREATE:
+				this.onRoomRequestCreate(message, client);
+				break;
+
+			case MessageType.ROOM_REQUEST_JOIN:
+				this.onRoomRequestJoin(message, client);
+				break;
+
+			case MessageType.ROOM_REQUEST_LEAVE:
+				this.onRoomRequestLeave(message, client);
 				break;
 
 			default:
@@ -24,7 +36,20 @@ export class MessageHandlerService extends EventEmitter {
 		}
 	}
 
-	public onAdminJoin(client: Client) {
+	public onAdminJoin(message: KieloMessage, client: Client) {
+		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
 		this.rooms.addClientToAdminRoom(client);
+	}
+
+	public onRoomRequestCreate(message: KieloMessage, client: Client) {
+		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+	}
+
+	public onRoomRequestJoin(message: KieloMessage, client: Client) {
+		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
+	}
+
+	public onRoomRequestLeave(message: KieloMessage, client: Client) {
+		logger.info(`Client ${client.id} request ${MessageType[message.messageType]}`);
 	}
 }

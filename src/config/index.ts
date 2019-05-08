@@ -26,9 +26,9 @@ export class ConfigService {
 					resolve(__dirname, '..', '..', 'certificates', 'cert.pem'),
 				),
 			},
-			logger: {
-				prettyPrint: { colorize: true },
-			},
+			// logger: {
+			// 	prettyPrint: { colorize: true },
+			// },
 			ignoreTrailingSlash: true,
 		} as ServerOptionsAsSecureHttp2);
 	}

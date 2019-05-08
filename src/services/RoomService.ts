@@ -55,19 +55,19 @@ export class RoomService extends EventEmitter {
 			this.rooms.delete(room.id);
 
 			return Promise.resolve(true);
-		} else {
-			return Promise.resolve(false);
 		}
+
+		return Promise.resolve(false);
 	}
 
 	public generateUniqueRoomCode(): string {
 		let code: string;
 
 		while (!code || this.rooms.has(code)) {
-			code = generateId(this.roomCodeAlphabet, this.roomCodeLength);
+			code = generateId(this.roomCodeAlphabet, this.roomCodeLength).toUpperCase();
 		}
 
-		return code.toUpperCase();
+		return code;
 	}
 
 	public addClientToAdminRoom(client: Client): boolean {
