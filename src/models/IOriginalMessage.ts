@@ -1,8 +1,8 @@
 import { MessageType } from 'dist/models/MessageType';
 
 export interface IOriginalMessage {
-	/** message type enum */
-	messageType?: MessageType|number;
+	/** message type enum value */
+	messageType?: number;
 
 	/** Serialized messagetype */
 	t?: number;

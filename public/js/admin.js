@@ -65,6 +65,7 @@ class App {
 			row.querySelector('.room').textContent = `${room.id} - ${room.name}`;
 			row.querySelector('.clients .badge').textContent = room.clients.length;
 			row.querySelector('.reserved .badge').textContent = Object.keys(room.reservations).length;
+			row.querySelector('.size .badge').textContent = room.maxSize || 'Inf';
 			row.querySelector('.room-clients').textContent = room.clients.map( c => c.id ).join(', ');
 
 			if (!room.canClose) {
@@ -85,7 +86,7 @@ class App {
 			row.querySelector('li').setAttribute('data-client-id', client.id);
 			row.querySelector('li').classList.add('list-group-item', client.isAlive ? 'list-group-item-success' : 'list-group-item-warning');
 			row.querySelector('.client').textContent = `${client.id} - ${client.ip}`;
-			row.querySelector('.client-rooms').textContent = Object.keys(client.rooms).map( r => r.id ).join(', ');
+			row.querySelector('.client-rooms').textContent = client.rooms.join(', ');
 
 			this.$clientList.appendChild(row);
 		});

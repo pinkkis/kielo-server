@@ -20,7 +20,7 @@ export class MessageHandlerService extends EventEmitter {
 				break;
 
 			default:
-				logger.warn(`Unknown messageType "${message.messageType}"`);
+				logger.warn(`Unknown messageType "${MessageType[message.messageType]}"`);
 		}
 	}
 

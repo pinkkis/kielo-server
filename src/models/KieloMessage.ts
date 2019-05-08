@@ -3,7 +3,7 @@ import { encode, decode, Any } from 'messagepack';
 import { IOriginalMessage } from './IOriginalMessage';
 
 export class KieloMessage {
-	public messageType: MessageType;
+	public messageType: number;
 	public roomId: string;
 	private message: IOriginalMessage;
 
@@ -35,7 +35,7 @@ export class KieloMessage {
 
 	constructor(
 		input: any,
-		messageType?: MessageType,
+		messageType?: number,
 		roomId?: string,
 	) {
 		if (Object.prototype.toString.call(input) !== '[object Object]') {
@@ -62,12 +62,7 @@ export class KieloMessage {
 	private deserialize(input: any): any {
 		this.message = decode(input, Any);
 
-		// const foo: MessageType = MessageType[this.message.t.toString()];
-
-		this.messageType = this.message.t
-			? MessageType[this.message.t.toString()] as MessageType
-			: MessageType.BASE;
-
+		this.messageType = this.message.t || MessageType.BASE;
 		this.roomId = this.message.r || '';
 
 		if (this.message.t) { delete this.message.t; }
