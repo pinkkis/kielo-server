@@ -35,7 +35,7 @@
 		"dotenv": "^8.0.0",
 		"fastify": "^2.3.0",
 		"fastify-blipp": "^1.2.1",
-		"fastify-static": "^2.4.0",
+		"fastify-static": "^4.2.4",
 		"fastify-ws": "^1.0.1",
 		"messagepack": "^1.1.10",
 		"nanoid": "^2.0.1",
