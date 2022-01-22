@@ -38,7 +38,7 @@
 		"fastify-static": "^2.4.0",
 		"fastify-ws": "^1.0.1",
 		"messagepack": "^1.1.10",
-		"nanoid": "^2.0.1",
+		"nanoid": "^3.1.31",
 		"pino-pretty": "^3.0.0",
 		"reflect-metadata": "^0.1.13",
 		"rimraf": "^2.6.3",
