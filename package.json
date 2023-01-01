@@ -59,7 +59,7 @@
 		"rollup-plugin-terser": "^4.0.4",
 		"rollup-plugin-typescript": "^1.0.1",
 		"ts-node": "^8.1.0",
-		"tsconfig-paths": "^3.8.0",
+		"tsconfig-paths": "^3.10.1",
 		"tslint": "^5.16.0",
 		"typescript": "^3.4.5"
 	}
